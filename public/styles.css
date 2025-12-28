@@ -136,11 +136,10 @@ button:focus-visible,a:focus-visible,input:focus-visible,textarea:focus-visible{
   background:linear-gradient(145deg,#1e1621,#130d14);position:relative;box-shadow:0 0 0 1px rgba(167,148,148,.12);
 }
 
-/* Mobile nav toggle */
 .nav-toggle{
-  display:none;position:fixed;top:14px;right:14px;width:46px;height:42px;
+  display:flex;position:fixed;top:14px;right:14px;width:46px;height:42px;
   border:1px solid rgba(167,148,148,.25);background:rgba(16,4,24,.55);backdrop-filter:blur(12px);
-  border-radius:var(--radius-sm);z-index:100;flex-direction:column;justify-content:center;gap:7px;transition:background .35s;
+  border-radius:var(--radius-sm);z-index:140;flex-direction:column;justify-content:center;gap:7px;transition:background .35s;
 }
 .nav-toggle span{display:block;height:2px;width:24px;background:#e9e4e6;margin-inline:auto;border-radius:4px;transition:transform .4s,opacity .35s;}
 .nav-toggle.active span:nth-child(1){transform:translateY(9px) rotate(45deg);}
@@ -163,6 +162,8 @@ button:focus-visible,a:focus-visible,input:focus-visible,textarea:focus-visible{
   background:linear-gradient(to bottom, rgba(13,1,7,0) 0%, rgba(13,1,7,.85) 70%, rgba(13,1,7,.95) 100%);
   z-index:1;pointer-events:none;
 }
+/* Mobile-only hero image (falls back to background on desktop) */
+.hero-img-mobile{display:none;width:100%;height:auto;object-fit:cover;}
 .hero-inner{position:relative;z-index:2;text-align:center;padding:0 1rem;max-width:950px;}
 .hero-title{
   font-family:var(--font-title);
@@ -256,7 +257,7 @@ button:focus-visible,a:focus-visible,input:focus-visible,textarea:focus-visible{
   -webkit-background-clip:text;color:transparent;margin-bottom:.6rem;
 }
 .about-text{color:var(--text-dim);font-size:1rem;margin-bottom:1rem;}
-.about-list{list-style:disc;margin-left:1.2rem;color:var(--text-faint);}
+  display:flex;position:fixed;top:14px;right:14px;width:46px;height:42px;
 .about-list li{margin:.35rem 0;}
 .about-photo{
   position:relative;border:1px solid rgba(167,148,148,.18);
@@ -264,6 +265,9 @@ button:focus-visible,a:focus-visible,input:focus-visible,textarea:focus-visible{
   min-height:260px;
 }
 .about-photo img{width:100%;height:100%;object-fit:cover;filter:saturate(.9) contrast(1.04);}
+.site-nav{display:none;}
+.site-nav.open{display:flex;flex-direction:column;align-items:center;position:absolute;left:0;right:0;top:100%;background:rgba(13,1,7,.95);padding:1.25rem 1rem;border-bottom:1px solid rgba(167,148,148,.08);z-index:58}
+.site-nav .nav-social{margin-top:1rem;display:flex;gap:.6rem}
 
 /* History */
 .history-section{position:relative;}
@@ -347,3 +351,61 @@ button:focus-visible,a:focus-visible,input:focus-visible,textarea:focus-visible{
 @media (max-width:860px){
   .hero-title{font-size:clamp(2.4rem,14vw,4.8rem);}
 }
+
+/* Mobile improvements: stack nav, reduce hero height, resize icons */
+@media (max-width:900px){
+  .site-nav ul{flex-direction:column;gap:1rem;align-items:center;padding:0;margin:0;}
+  .site-nav{display:block}
+  /* On mobile make the hero fill the viewport and avoid letterboxing */
+  :root{--site-header-h:64px}
+  .hero{height:100vh;background:none;padding:0;display:block;position:relative;overflow:hidden}
+  /* blurred full-bleed fill so edges never show background color */
+  .hero::before{content:'';position:absolute;top:0;left:0;right:0;height:100vh;background-image:url('/assets/band-hero.jpg');background-size:cover;background-position:center;filter:blur(16px) saturate(.85);transform:scale(1.03);z-index:1}
+  /* main visible image centered and covering the viewport */
+  .hero-img-mobile{display:block;position:absolute;top:0;left:50%;transform:translateX(-50%);width:auto;max-width:100%;height:100vh;object-fit:cover;object-position:center;z-index:2}
+  /* overlay text centered but offset so the fixed header doesn't hide it */
+  .hero-inner{position:absolute;left:0;right:0;top:var(--site-header-h);height:calc(100vh - var(--site-header-h));z-index:3;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:1.1rem 1rem;text-align:center}
+
+  /* remove spacing between hero and following sections so edges touch */
+  .hero + .section{padding-top:0;margin-top:0}
+
+  /* ensure headings inside hero don't add unexpected margin that creates gaps */
+  .hero .hero-title,.hero .hero-subtitle{margin:0}
+  .hero-title{font-size:clamp(2rem,9vw,4.2rem)}
+  .ico{width:40px;height:40px}
+  .ico img{width:18px;height:18px}
+  .social-contact-list{gap:.5rem}
+  .contact-text{font-size:.92rem}
+  .about-text{font-size:.95rem;line-height:1.6}
+  .about-grid{gap:1.2rem}
+  .about-section{background-attachment:scroll}
+  .footer-grid{grid-template-columns:1fr}
+  /* (overlays kept) we rely on blurred background + cover image to fill viewport */
+  /* make header solid and non-blurred so it doesn't interfere with the hero image */
+  .site-header{background:#0d0107;backdrop-filter:none;border-bottom:1px solid rgba(0,0,0,.18);}
+  .site-header{z-index:120}
+}
+
+/* Additional user-specified mobile tweaks */
+@media (max-width:900px){
+  .hero::before {
+    background: linear-gradient(180deg, rgba(13,1,7,.35) 0%, rgba(13,1,7,.7) 70%);
+  }
+  .hero::after { filter: blur(20px); }
+
+  /* simple hamburger behavior (requires markup/JS for toggle) */
+  .nav-toggle { display:flex; }
+  .site-nav { display:none; }
+  .nav-toggle.active + .site-nav { display:flex; flex-direction:column; align-items:center; }
+  .site-nav.open { display:flex; flex-direction:column; align-items:center; }
+}
+
+@media (max-width:480px){
+  .hero-title { font-size: clamp(1.8rem, 12vw, 3.5rem); }
+  .about-title { font-size: clamp(1.4rem, 4vw, 2rem); }
+  .history-title { font-size: clamp(1.2rem, 3.5vw, 1.8rem); }
+
+  .section { padding: 2rem 1rem; }
+  .about-copy, .history-copy { padding: 1rem; }
+}
+

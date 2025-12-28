@@ -3,12 +3,12 @@
 @section('content')
   <!-- Hero -->
   <section class="hero hero-band" id="hero" aria-label="Hero section">
+    <img class="hero-img-mobile" src="/assets/band-hero.jpg" alt="Lost In The Ocean" aria-hidden="true">
     <div class="hero-inner">
       <h1 class="hero-title">
         <span class="line accent">Lost In The Ocean</span>
       </h1>
       <p class="hero-subtitle">Desde Ciudad de Guatemala.</p>
-      <a href="#about" class="btn primary hero-cta">Conócenos</a>
     </div>
     <div class="hero-overlay-gradient" aria-hidden="true"></div>
   </section>
@@ -56,10 +56,6 @@ en crear material propio.
         </ul>
       </div>
 
-      <div class="about-photo">
-        <img src="/assets/about-band.jpg" alt="Lost In The Ocean band portrait" loading="lazy" />
-      </div>
-    </div>
   </section>
 
 @endsection

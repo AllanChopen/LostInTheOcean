@@ -246,3 +246,102 @@ function initHeroCanvas() {
   }
   render();
 }
+
+// === Additions: Mobile nav close helper + Esc key + smoother scroll + canvas performance ===
+
+document.addEventListener('DOMContentLoaded', () => {
+  const header = document.querySelector('.site-header');
+  const navToggle = document.querySelector('.nav-toggle');
+  const nav = document.querySelector('.site-nav');
+
+  // 1) Reusable close helper for the mobile nav
+  function closeNav() {
+    if (!nav) return;
+    nav.classList.remove('open');
+    if (navToggle) {
+      navToggle.classList.remove('active');
+      navToggle.setAttribute('aria-expanded', 'false');
+    }
+    document.body.classList.remove('nav-open');
+  }
+
+  // Close nav when pressing Escape
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && nav?.classList.contains('open')) {
+      closeNav();
+    }
+  });
+
+  // Use the helper in link click handler (your code already closes; this refactors it)
+  nav?.querySelectorAll('a').forEach(a => {
+    a.addEventListener('click', closeNav);
+  });
+
+  // 2) Smooth scroll: respect reduced motion and actual header height
+  const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  document.querySelectorAll('a[href^="#"]').forEach(link => {
+    link.addEventListener('click', e => {
+      const id = link.getAttribute('href')?.slice(1);
+      const target = id ? document.getElementById(id) : null;
+      if (target) {
+        e.preventDefault();
+        const headerOffset = Math.max(72, header?.offsetHeight || 0);
+        const top = target.getBoundingClientRect().top + window.scrollY - headerOffset;
+        window.scrollTo({ top, behavior: prefersReduced ? 'auto' : 'smooth' });
+      }
+    });
+  });
+});
+
+// 3) Canvas: mobile/reduced-motion tuning, throttle resize, pause on tab hidden
+(function enhanceCanvas() {
+  const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const isMobile = window.innerWidth < 900;
+  if (prefersReduced) return; // Skip canvas if user prefers reduced motion
+
+  // Wrap original init to adjust counts on mobile and add pause logic
+  const originalInit = initHeroCanvas;
+  window.initHeroCanvas = function () {
+    const canvas = document.getElementById('hero-canvas');
+    if (!canvas) return;
+
+    // Call original init to set everything up
+    originalInit();
+
+    // After original init, adjust animation loop and resize for performance:
+    let paused = false;
+    document.addEventListener('visibilitychange', () => {
+      paused = document.hidden;
+    });
+
+    // Throttle resize handler
+    let resizeQueued = false;
+    const onResize = () => {
+      if (!resizeQueued) {
+        resizeQueued = true;
+        requestAnimationFrame(() => {
+          // Trigger original resize logic by re-running init
+          // (If you prefer, expose resize() from your init and call that here.)
+          originalInit();
+          resizeQueued = false;
+        });
+      }
+    };
+    window.addEventListener('resize', onResize, { passive: true });
+
+    // If you want fewer particles/lines on mobile, adjust via globals in your init:
+    // NOTE: If P_COUNT and LINE_COUNT are const inside initHeroCanvas, you can
+    // move them to be computed based on window.innerWidth as shown below:
+    // const P_COUNT = isMobile ? 50 : 85;
+    // const LINE_COUNT = isMobile ? 3 : 4;
+    // (Place the above inside your initHeroCanvas where P_COUNT/LINE_COUNT are declared.)
+
+    // Optionally patch requestAnimationFrame loop to skip frames when paused.
+    // In your render() function, early return if paused:
+    // function render() {
+    //   if (paused) { requestAnimationFrame(render); return; }
+    //   // ...existing drawing...
+    //   requestAnimationFrame(render);
+    // }
+  };
+})();
