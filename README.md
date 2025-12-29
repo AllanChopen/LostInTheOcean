@@ -1,59 +1,221 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# Lost In The Ocean — Sitio oficial (Laravel 12)
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+Sitio web oficial de la banda Lost In The Ocean (Ciudad de Guatemala), construido con Laravel 12. Incluye página principal con biografía y miembros, sección de contacto con formulario que envía correos, y una plantilla base con cabecera y pie de página.
 
-## About Laravel
+## Contenido
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+- [Características](#características)
+- [Tecnologías](#tecnologías)
+- [Estructura del proyecto](#estructura-del-proyecto)
+- [Requisitos previos](#requisitos-previos)
+- [Configuración y arranque](#configuración-y-arranque)
+- [Modo desarrollo](#modo-desarrollo)
+- [Uso con Docker Compose](#uso-con-docker-compose)
+- [Rutas y endpoints](#rutas-y-endpoints)
+- [Variables de entorno de correo](#variables-de-entorno-de-correo)
+- [Personalización](#personalización)
+- [Pruebas](#pruebas)
+- [Despliegue](#despliegue)
+- [Licencia](#licencia)
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+---
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+## Características
 
-## Learning Laravel
+- Landing page con secciones:
+  - Hero con imagen y título “Lost In The Ocean”.
+  - Biografía y lista de miembros.
+  - Contacto con formulario y datos de redes.
+- Formulario de contacto que envía un correo al inbox configurado.
+- Plantillas Blade con layout base y parciales de `header` y `footer`.
+- Assets estáticos (CSS/JS/imagenes) servidos desde `public/`.
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework. You can also check out [Laravel Learn](https://laravel.com/learn), where you will be guided through building a modern Laravel application.
+## Tecnologías
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+- PHP 8.2
+- Laravel 12
+- Blade Templates
+- Vite (para assets de front-end)
+- Node/NPM (para scripts front-end)
 
-## Laravel Sponsors
+## Estructura del proyecto
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+- `routes/web.php`: Rutas del sitio (raíz y envío de contacto).
+- `app/Http/Controllers/ContactController.php`: Lógica para validar y enviar correo del formulario.
+- `app/Mail/ContactMail.php`: Mailable que usa la vista `emails.contact`.
+- `resources/views/layouts/app.blade.php`: Layout HTML principal.
+- `resources/views/home.blade.php`: Página principal (hero, biografía, contacto).
+- `resources/views/partials/{header,footer,contact-form}.blade.php`: Fragmentos reutilizables.
+- `resources/views/emails/contact.blade.php`: Plantilla del correo de contacto.
+- `public/`: Archivos estáticos (CSS, JS, imágenes). Ejemplos usados: `/assets/band-hero.jpg` y `/assets/icons/*.svg`.
+- `composer.json`: Dependencias y scripts de Composer (setup, dev, test).
+- `vite.config.js`: Configuración de Vite.
+- `.env.example`: Ejemplo de variables de entorno.
 
-### Premium Partners
+## Requisitos previos
 
-- **[Vehikl](https://vehikl.com)**
-- **[Tighten Co.](https://tighten.co)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Redberry](https://redberry.international/laravel-development)**
-- **[Active Logic](https://activelogic.com)**
+- PHP 8.2+
+- Composer
+- Node.js 18+ y npm
+- Configuración SMTP válida para enviar correos (ver sección de [Variables de entorno de correo](#variables-de-entorno-de-correo))
 
-## Contributing
+## Configuración y arranque
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+1. Clonar el repositorio:
+   ```bash
+   git clone https://github.com/AllanChopen/LostInTheOcean.git
+   cd LostInTheOcean
+   ```
 
-## Code of Conduct
+2. Instalar dependencias de PHP:
+   ```bash
+   composer install
+   ```
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+3. Copiar archivo de entorno y generar key:
+   ```bash
+   cp .env.example .env
+   php artisan key:generate
+   ```
 
-## Security Vulnerabilities
+4. Configurar variables de correo en `.env` (ver más abajo).
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+5. Instalar dependencias front-end:
+   ```bash
+   npm install
+   ```
 
-## License
+6. Construir assets para producción (opcional en entornos de dev):
+   ```bash
+   npm run build
+   ```
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+También puedes usar el script integrado que automatiza la mayoría de pasos:
+```bash
+composer run setup
+```
+
+## Modo desarrollo
+
+Puedes levantar el servidor y los procesos de desarrollo con Composer o manualmente:
+
+- Usando script de Composer (incluye servidor, colas, logs y Vite):
+  ```bash
+  composer run dev
+  ```
+- Manualmente:
+  ```bash
+  php artisan serve
+  npm run dev
+  ```
+
+Luego visita:
+```
+http://127.0.0.1:8000
+```
+
+## Uso con Docker Compose
+
+El proyecto incluye `compose.yaml`. Un flujo típico:
+
+```bash
+cp .env.example .env
+# Ajusta variables en .env según tus servicios (APP_URL, MAIL_*, etc.)
+docker compose up -d
+```
+
+Asegúrate de que el contenedor de la app tenga PHP 8.2 y que el servicio de correo esté correctamente configurado o accesible desde el contenedor.
+
+## Rutas y endpoints
+
+- `GET /` — Renderiza la vista `home` con las secciones del sitio.
+
+- `POST /contact` — Envía el formulario de contacto.
+  - Payload esperado:
+    ```json
+    {
+      "name": "Tu nombre",
+      "email": "tu@correo.com",
+      "phone": "Opcional",
+      "message": "Tu mensaje"
+    }
+    ```
+  - Respuestas:
+    - HTML: redirige de regreso con `session('success')`.
+    - JSON (si el request incluye `Accept: application/json`): 
+      ```json
+      { "message": "Mensaje enviado correctamente. ¡Gracias por contactarnos!" }
+      ```
+
+Ejemplo con `curl` (respuesta JSON):
+```bash
+curl -X POST http://127.0.0.1:8000/contact \
+  -H "Accept: application/json" \
+  -H "Content-Type: application/x-www-form-urlencoded" \
+  -d "name=Juan Perez&email=juan@example.com&phone=555-1234&message=Hola, me interesa la banda"
+```
+
+## Variables de entorno de correo
+
+En `.env`, ajusta estas variables para enviar emails:
+
+```env
+MAIL_MAILER=smtp
+MAIL_HOST=smtp.tu-proveedor.com
+MAIL_PORT=587
+MAIL_USERNAME=tu_usuario
+MAIL_PASSWORD=tu_password
+MAIL_ENCRYPTION=tls
+MAIL_FROM_ADDRESS=notificaciones@tudominio.com
+MAIL_FROM_NAME="Lost In The Ocean"
+```
+
+El destinatario actual del formulario está definido en:
+```
+app/Http/Controllers/ContactController.php
+```
+Línea relevante:
+```php
+Mail::to('allanchopen@gmail.com')->send(new ContactMail($data));
+```
+Cámbialo si necesitas enviar a otra dirección (por ejemplo, a un alias del management).
+
+## Personalización
+
+- Títulos, textos y biografía: edita `resources/views/home.blade.php`.
+- Miembros: lista en la sección “Miembros” dentro de la misma vista.
+- Encabezado y pie: `resources/views/partials/header.blade.php` y `resources/views/partials/footer.blade.php`.
+- Estilos y scripts: referenciados desde el layout:
+  ```blade
+  <link rel="stylesheet" href="{{ asset('styles.css') }}" />
+  <script defer src="{{ asset('script.js') }}"></script>
+  ```
+  Coloca tus archivos en `public/styles.css` y `public/script.js` o ajusta el layout para usar `@vite` si prefieres la integración estándar de Vite con Laravel.
+
+- Imágenes e íconos: coloca tus recursos en `public/assets/` y ajusta las rutas en las vistas.
+
+## Pruebas
+
+Ejecuta la suite de pruebas:
+```bash
+composer test
+```
+
+También puedes usar:
+```bash
+php artisan test
+```
+
+## Despliegue
+
+- Asegúrate de configurar correctamente `.env` en tu servidor (especialmente `APP_ENV`, `APP_KEY`, `APP_URL`, `MAIL_*`).
+- Compila assets:
+  ```bash
+  npm run build
+  ```
+- Sirve el proyecto con tu web server (Nginx/Apache) apuntando a `public/`.
+- Configura permisos de `storage/` y `bootstrap/cache`.
+
+## Licencia
+
+Este proyecto se distribuye bajo licencia **MIT**.
