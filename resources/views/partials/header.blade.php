@@ -10,6 +10,7 @@
       <li><a href="#hero">Home</a></li>
       <li><a href="#about">About</a></li>
       <li><a href="#contact">Contacto</a></li>
+      <li class="admin-login"><a href="{{ route('admin.panel') }}">Iniciar sesión</a></li>
     </ul>
     <div class="nav-social">
       <a href="https://www.instagram.com/lostintheoceanband?igsh=MXNtNmw5dTBxYXAzaw==" aria-label="Instagram" class="ico instagram" title="Instagram">

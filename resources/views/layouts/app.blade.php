@@ -10,6 +10,14 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;900&family=Unica+One&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="{{ asset('styles.css') }}" />
   <script defer src="{{ asset('script.js') }}"></script>
+  <style>
+    /* Make header fixed and keep it visually separate from page content */
+    .site-header { position: fixed; left: 0; top: 0; width: 100%; z-index: 1200; }
+    /* Ensure mobile nav toggle still sits above content */
+    .nav-toggle { z-index: 1300; }
+    /* Space for the fixed header so content isn't covered */
+    .page-content { padding-top: var(--header-height, 92px); }
+  </style>
 </head>
 <body>
   <!-- Mobile Nav Toggle -->
@@ -19,7 +27,9 @@
 
   @include('partials.header')
 
-  @yield('content')
+  <div class="page-content">
+    @yield('content')
+  </div>
 
   @include('partials.footer')
 </body>
