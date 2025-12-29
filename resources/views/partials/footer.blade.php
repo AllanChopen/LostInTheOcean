@@ -33,6 +33,9 @@
         </ul>
       </div>
     </div>
+    <div class="footer-logo-right" aria-hidden="true">
+      <img src="/assets/LOGO.png" alt="Lost In The Ocean logo" />
+    </div>
   </div>
   <div class="sub-footer">
     <small>&copy; <span id="year"></span> Lost In The Ocean. All rights reserved.</small>

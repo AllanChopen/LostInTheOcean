@@ -70,7 +70,7 @@ button:focus-visible,a:focus-visible,input:focus-visible,textarea:focus-visible{
   text-transform:none; /* removed uppercase */
   background:var(--gradient-brand);
   -webkit-background-clip:text;
-  .logo.small .logo-mark img{width:62%;height:62%}
+  .logo.small .logo-mark img{width:36px;height:auto}
   filter:drop-shadow(0 2px 10px rgba(90,66,82,.45));
 }
 .divider{width:86px;height:3px;background:var(--gradient-brand);margin-top:.75rem;border-radius:4px;position:relative;overflow:hidden;}
@@ -93,13 +93,11 @@ button:focus-visible,a:focus-visible,input:focus-visible,textarea:focus-visible{
 .site-header.scrolled{background:rgba(16,4,24,.82);}
 .logo{display:flex;align-items:center;gap:.5rem;font-family:var(--font-display);letter-spacing:.09em;font-size:1.05rem;}
 .logo-mark{
-  width:44px;height:44px;display:grid;place-items:center;
-  background:var(--gradient-brand);border-radius:50%;font-size:.95rem;font-weight:600;color:#fff;
-  position:relative;overflow:hidden;box-shadow:0 0 0 1px rgba(167,148,148,.15),0 0 26px -6px rgba(90,66,82,.6);
+  /* show logo image directly (no circular bubble) */
+  display:inline-flex;align-items:center;gap:.5rem;padding:0;margin:0;background:transparent;border-radius:0;box-shadow:none;position:relative;overflow:visible;
 }
 
-.logo-mark img{width:62%;height:62%;display:block;object-fit:contain}
-.logo-mark::after{content:'';position:absolute;inset:0;background:radial-gradient(circle at 25% 30%,rgba(255,255,255,.28),transparent 70%);mix-blend-mode:overlay;}
+.logo-mark img{width:45px;height:auto;display:block;object-fit:contain}
 .logo-text{color:#fff;}
 .site-nav ul{list-style:none;display:flex;gap:clamp(1rem,2.2vw,2.8rem);}
 .site-nav a{
@@ -124,7 +122,7 @@ button:focus-visible,a:focus-visible,input:focus-visible,textarea:focus-visible{
 }
 }
 .ico::before{
-  .logo.small .logo-mark{width:44px;height:44px;font-size:.95rem}
+  /* no special logo bubble rules here */
   mask:radial-gradient(circle,#000 65%,transparent 68%);-webkit-mask:radial-gradient(circle,#000 65%,transparent 68%);
   opacity:.55;mix-blend-mode:screen;
 }
@@ -319,6 +317,14 @@ button:focus-visible,a:focus-visible,input:focus-visible,textarea:focus-visible{
   width:min(1400px,92%);margin-inline:auto;display:grid;gap:3rem;
   grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
 }
+
+/* Footer logo right alignment */
+.footer-logo-right{display:flex;align-items:center;justify-content:flex-end}
+.footer-logo-right img{width:140px;height:auto;display:block}
+@media (max-width:900px){
+  .footer-logo-right{justify-content:flex-start;margin-top:1rem}
+  .footer-logo-right img{width:100px}
+}
 .footer-brand .tagline{font-size:.7rem;letter-spacing:.3em;text-transform:none;color:var(--text-faint);margin-top:.9rem;}
 .footer-col h4{font-size:.75rem;letter-spacing:.28em;text-transform:none;margin-bottom:1.1rem;color:var(--text-dim);} 
 .footer-col ul{list-style:none;display:grid;gap:.55rem;}
@@ -384,6 +390,24 @@ button:focus-visible,a:focus-visible,input:focus-visible,textarea:focus-visible{
   /* make header solid and non-blurred so it doesn't interfere with the hero image */
   .site-header{background:#0d0107;backdrop-filter:none;border-bottom:1px solid rgba(0,0,0,.18);}
   .site-header{z-index:120}
+}
+
+/* Contact section styles */
+.contact-section{padding-top:2.4rem;padding-bottom:3.2rem}
+.contact-grid{display:grid;grid-template-columns:1fr 420px;gap:2rem;align-items:start}
+.contact-copy{padding-right:1rem}
+.contact-copy .about-title{font-size:1.4rem}
+.contact-panel{background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));border:1px solid rgba(167,148,148,.08);padding:1.15rem;border-radius:12px;box-shadow:0 8px 30px rgba(0,0,0,.4)}
+.contact-panel .field{width:100%;padding:12px 14px;border-radius:10px;border:1px solid rgba(167,148,148,.06);background:transparent;color:var(--text);margin-bottom:10px;resize:vertical}
+.contact-panel .field::placeholder{color:var(--text-faint)}
+.contact-panel .field:focus{box-shadow:var(--focus);border-color:var(--brand-accent)}
+.contact-panel textarea.field{min-height:120px}
+.contact-panel .form-actions{display:flex;align-items:center;gap:.6rem;margin-top:6px}
+.contact-panel .form-message{flex:1;color:var(--text-faint);font-size:.95rem}
+
+@media (max-width:900px){
+  .contact-grid{grid-template-columns:1fr;padding:0}
+  .contact-panel{margin-top:1rem}
 }
 
 /* Additional user-specified mobile tweaks */

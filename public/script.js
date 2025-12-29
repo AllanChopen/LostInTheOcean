@@ -71,24 +71,31 @@ document.addEventListener('DOMContentLoaded', () => {
   contactForm?.addEventListener('submit', (e) => {
     e.preventDefault();
     if (!validateContact()) return;
-    setFormMessage('Sending...', 'pending');
-    setTimeout(() => {
-      setFormMessage('Message sent! We will reply soon.', 'success');
-      contactForm.reset();
-      clearValid();
-    }, 1100);
+    setFormMessage('Enviando...', 'pending');
+    // perform real AJAX submit (returns JSON when server receives Accept: application/json)
+    (async () => {
+      try {
+        const formData = new FormData(contactForm);
+        const res = await fetch(contactForm.action || '/contact', { method: contactForm.method || 'POST', headers: { 'Accept': 'application/json' }, body: formData });
+        if (!res.ok) throw new Error('Network response not ok');
+        const json = await res.json();
+        setFormMessage(json.message || 'Mensaje enviado. Gracias.', 'success');
+        contactForm.reset();
+        clearValid();
+      } catch (err) {
+        setFormMessage('Error al enviar. Intenta de nuevo.', 'error');
+      }
+    })();
   });
 
   function validateContact() {
     if (!contactForm) return false;
     let valid = true;
-    const { name, email, subject, message } = contactForm;
+    const { name, email, message } = contactForm;
     clearErrors();
-    if (!name.value.trim()) markInvalid(name, 'Name required.'), valid = false;
-    if (!/^\S+@\S+\.\S+$/.test(email.value.trim())) markInvalid(email, 'Valid email required.'), valid = false;
-    if (!subject.value.trim()) markInvalid(subject, 'Subject required.'), valid = false;
-    if (!message.value.trim() || message.value.trim().length < 10)
-      markInvalid(message, 'Min 10 characters.'), valid = false;
+    if (!name || !name.value || !name.value.trim()) markInvalid(name, 'Name required.'), valid = false;
+    if (!email || !/^\S+@\S+\.\S+$/.test(email.value.trim())) markInvalid(email, 'Valid email required.'), valid = false;
+    if (!message || !message.value.trim() || message.value.trim().length < 10) markInvalid(message, 'Min 10 characters.'), valid = false;
     if (!valid) setFormMessage('Please fix the highlighted fields.', 'error'); else setFormMessage('', '');
     return valid;
   }

@@ -58,4 +58,49 @@ en crear material propio.
 
   </section>
 
+<section id="contact" class="section contact-section" aria-label="Contact Lost In The Ocean">
+  <div class="section-header">
+    <h2 class="section-title">Contacto</h2>
+    <div class="divider"></div>
+  </div>
+
+  <div style="width:min(1100px,92%);margin-inline:auto;">
+    <div class="contact-grid">
+      <div class="contact-copy">
+        <h3 class="about-title">Escribenos</h3>
+        <p class="about-text">Si tienes preguntas, propuestas o quieres contratar a la banda, envíanos un mensaje y te responderemos pronto. También puedes seguirnos en nuestras redes para novedades y conciertos.</p>
+        <ul style="list-style:none;margin-top:1rem;padding:0;display:flex;gap:0.8rem;flex-wrap:wrap;">
+          <li style="display:flex;align-items:center;gap:.5rem;color:var(--text-faint);">
+            <img src="/assets/icons/mail.svg" alt="email" style="width:18px;height:18px;opacity:.9;margin-right:6px"> litobandaoficial@gmail.com
+          </li>
+          <li style="display:flex;align-items:center;gap:.5rem;color:var(--text-faint);">
+            <img src="/assets/icons/instagram.svg" alt="ig" style="width:18px;height:18px;opacity:.9;margin-right:6px"> @lito.band
+          </li>
+        </ul>
+      </div>
+
+      <aside class="contact-panel">
+        <form class="contact-form" id="contact-form" method="POST" action="/contact">
+          @csrf
+          <div class="field-row">
+            <input name="name" class="field" type="text" placeholder="Tu nombre" required />
+            <input name="email" class="field" type="email" placeholder="Tu correo" required />
+          </div>
+          <div class="field-row">
+            <input name="phone" class="field" type="tel" placeholder="Teléfono (opcional)" />
+          </div>
+          <div class="field-row">
+            <textarea name="message" class="field" placeholder="Tu mensaje" rows="6" required></textarea>
+          </div>
+
+          <div class="form-actions">
+            <div class="form-message"></div>
+            <button type="submit" class="btn">Enviar</button>
+          </div>
+        </form>
+      </aside>
+    </div>
+  </div>
+</section>
+
 @endsection
