@@ -83,7 +83,7 @@ button:focus-visible,a:focus-visible,input:focus-visible,textarea:focus-visible{
 
 /* Header / Nav */
 .site-header{
-  position:fixed;top:0;left:0;right:0;display:flex;align-items:center;justify-content:space-between;
+  position:relative;display:flex;align-items:center;justify-content:space-between;
   padding:.9rem clamp(1rem,4vw,3rem);z-index:60;
   backdrop-filter:blur(18px) saturate(1.25);
   background:rgba(16,4,24,.6);
@@ -135,7 +135,7 @@ button:focus-visible,a:focus-visible,input:focus-visible,textarea:focus-visible{
 }
 
 .nav-toggle{
-  display:flex;position:fixed;top:14px;right:14px;width:46px;height:42px;
+  display:flex;position:relative;width:46px;height:42px;
   border:1px solid rgba(167,148,148,.25);background:rgba(16,4,24,.55);backdrop-filter:blur(12px);
   border-radius:var(--radius-sm);z-index:140;flex-direction:column;justify-content:center;gap:7px;transition:background .35s;
 }
@@ -198,6 +198,22 @@ button:focus-visible,a:focus-visible,input:focus-visible,textarea:focus-visible{
 
 /* Centering fixes: ensure top sections are truly centered */
 .hero-inner{width:min(1100px,92%);margin-inline:auto;padding-top:2.5rem;padding-bottom:2.5rem}
+/* Form controls theme */
+.input-label{display:block;font-weight:600;color:var(--text-faint);margin-bottom:.35rem}
+.form-input{
+  width:100%;padding:.75rem .9rem;background:rgba(255,255,255,0.02);border:1px solid rgba(167,148,148,.08);
+  color:var(--text);border-radius:calc(var(--radius-sm));transition:box-shadow .18s,transform .08s;border-radius:8px;
+}
+.form-input:focus{outline:none;box-shadow:var(--focus);border-color:var(--brand-accent);transform:translateY(-1px)}
+.input-error{color:#c84552;font-size:.85rem;margin-top:.35rem}
+
+/* Primary button used across auth forms */
+.btn-primary{display:inline-flex;align-items:center;justify-content:center;gap:.6rem;padding:.7rem 1.1rem;border-radius:999px;border:1px solid rgba(0,0,0,.12);background:var(--gradient-brand);color:#fff;font-weight:700;cursor:pointer;transition:transform .14s,filter .14s,box-shadow .14s}
+.btn-primary:hover{transform:translateY(-3px);filter:brightness(1.03);box-shadow:0 14px 30px rgba(13,1,7,.45)}
+.btn-primary:active{transform:translateY(-1px)}
+
+/* utility for muted helper text */
+.form-help{color:var(--text-faint);font-size:.92rem}
 .section-header{display:flex;flex-direction:column;align-items:center;text-align:center}
 .about-grid{width:min(1100px,92%);margin-inline:auto}
 

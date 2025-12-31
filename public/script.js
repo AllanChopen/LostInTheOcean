@@ -48,7 +48,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   });
 
-  /* Smooth scroll for internal links */
+  /* Smooth scroll for internal links. If the target isn't on this page, navigate to home with the hash. */
   document.querySelectorAll('a[href^="#"]').forEach(link => {
     link.addEventListener('click', e => {
       const id = link.getAttribute('href').slice(1);
@@ -56,6 +56,12 @@ document.addEventListener('DOMContentLoaded', () => {
       if (target) {
         e.preventDefault();
         window.scrollTo({ top: target.offsetTop - 80, behavior: 'smooth' });
+      } else {
+        // If we're not on the homepage, navigate to it with the hash so the section is visible there
+        if (location.pathname !== '/' && location.pathname !== '/index.php') {
+          e.preventDefault();
+          window.location.href = `${location.origin}/#${id}`;
+        }
       }
     });
   });
@@ -336,19 +342,6 @@ document.addEventListener('DOMContentLoaded', () => {
     };
     window.addEventListener('resize', onResize, { passive: true });
 
-    // If you want fewer particles/lines on mobile, adjust via globals in your init:
-    // NOTE: If P_COUNT and LINE_COUNT are const inside initHeroCanvas, you can
-    // move them to be computed based on window.innerWidth as shown below:
-    // const P_COUNT = isMobile ? 50 : 85;
-    // const LINE_COUNT = isMobile ? 3 : 4;
-    // (Place the above inside your initHeroCanvas where P_COUNT/LINE_COUNT are declared.)
-
-    // Optionally patch requestAnimationFrame loop to skip frames when paused.
-    // In your render() function, early return if paused:
-    // function render() {
-    //   if (paused) { requestAnimationFrame(render); return; }
-    //   // ...existing drawing...
-    //   requestAnimationFrame(render);
-    // }
+ 
   };
 })();

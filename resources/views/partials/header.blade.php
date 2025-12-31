@@ -1,16 +1,22 @@
 <header class="site-header">
-    <div class="logo">
+    <a href="{{ url('/') }}" class="logo">
     <span class="logo-mark" aria-hidden="true">
       <img src="/assets/LOGO.png" alt="Lost In The Ocean logo" />
     </span>
     <span class="logo-text">Lost In The Ocean</span>
-  </div>
+  </a>
   <nav class="site-nav" aria-label="Main Navigation">
     <ul>
       <li><a href="#hero">Home</a></li>
       <li><a href="#about">About</a></li>
       <li><a href="#contact">Contacto</a></li>
-      <li class="admin-login"><a href="{{ route('admin.panel') }}">Iniciar sesión</a></li>
+<li class="admin-login">
+  @auth
+    <a href="{{ route('admin.panel') }}">Panel</a>
+  @else
+    <a href="{{ route('login') }}">Iniciar sesión</a>
+  @endauth
+</li>
     </ul>
     <div class="nav-social">
       <a href="https://www.instagram.com/lostintheoceanband?igsh=MXNtNmw5dTBxYXAzaw==" aria-label="Instagram" class="ico instagram" title="Instagram">
