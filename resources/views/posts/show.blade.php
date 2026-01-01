@@ -19,5 +19,6 @@
     <article class="post-content">
       {!! nl2br(e($post->content)) !!}
     </article>
+    <div style="margin-top:1rem"><a href="{{ route('posts.index') }}" class="btn">Ver más blogs</a></div>
   </main>
 @endsection

@@ -14,6 +14,7 @@
   
   <div style="margin-top:1.5rem;">
     <a href="{{ route('admin.posts.index') }}" style="display:inline-block;padding:.6rem .9rem;background:var(--brand-accent);color:white;border-radius:.35rem;text-decoration:none">Administrar posts</a>
+    <a href="{{ route('admin.shows.index') }}" style="display:inline-block;padding:.6rem .9rem;background:var(--brand-accent);color:white;border-radius:.35rem;text-decoration:none;margin-left:.6rem;">Administrar shows</a>
   </div>
 
   

@@ -100,6 +100,57 @@ en crear material propio.
     <a href="{{ route('posts.index') }}" class="btn">Mostrar más</a>
   </div>
 
+  <!-- Shows cards -->
+  <section id="shows" class="section shows-section" aria-label="Upcoming shows" style="margin-top:2rem;">
+    <div class="section-header">
+      <h2 class="section-title">Shows</h2>
+      <div class="divider"></div>
+    </div>
+
+    <div style="width:min(1100px,92%);margin-inline:auto;">
+      {{-- Grid layout removed — keeping carousel below as primary shows display. --}}
+    </div>
+
+      <div style="width:min(1100px,92%);margin-inline:auto;">
+        <div class="shows-carousel-wrap" style="position:relative;">
+          <button id="shows-prev" aria-label="Anterior shows" style="position:absolute;left:-8px;top:50%;transform:translateY(-50%);z-index:3;background:rgba(0,0,0,0.6);color:white;border:none;border-radius:999px;width:36px;height:36px;display:flex;align-items:center;justify-content:center;cursor:pointer">‹</button>
+          <button id="shows-next" aria-label="Siguiente shows" style="position:absolute;right:-8px;top:50%;transform:translateY(-50%);z-index:3;background:rgba(0,0,0,0.6);color:white;border:none;border-radius:999px;width:36px;height:36px;display:flex;align-items:center;justify-content:center;cursor:pointer">›</button>
+          <div class="shows-carousel" style="display:flex;gap:1rem;overflow:auto;padding:1rem 0;scroll-snap-type:x mandatory;scroll-behavior:smooth;">
+            @if(isset($shows) && $shows->count())
+              @foreach($shows as $show)
+                <article class="post-card" style="min-width:260px;max-width:320px;flex:0 0 auto;scroll-snap-align:start;border:1px solid rgba(0,0,0,0.06);border-radius:8px;overflow:hidden;background:var(--card-bg);display:flex;flex-direction:column;">
+                  @if($show->poster_image)
+                    <a href="{{ route('shows.show', $show) }}" style="display:block"><img src="{{ $show->poster_image }}" alt="{{ $show->title }}" style="width:100%;aspect-ratio:2/3;object-fit:cover;display:block;"></a>
+                  @else
+                    <div style="width:100%;aspect-ratio:2/3;background:linear-gradient(90deg,var(--muted),#eee);"></div>
+                  @endif
+                  <div style="padding:1rem;flex:1;display:flex;flex-direction:column;justify-content:space-between;">
+                    <div>
+                      <a href="{{ route('shows.show', $show) }}" style="color:var(--text);text-decoration:none;font-weight:600;font-size:1.05rem">{{ $show->title }}</a>
+                      <p style="margin:.5rem 0 0;color:var(--text-faint);font-size:.95rem;line-height:1.2">
+                        <div>{{ $show->venue }} — {{ $show->country }}, {{ $show->city }}</div>
+                        <div>{{ $show->date->locale('es')->isoFormat('D MMM YYYY') }}@if($show->start_time) - {{ optional($show->start_time)->format('H:i') }}@endif</div>
+                      </p>
+                    </div>
+                    <div style="margin-top:1rem;display:flex;justify-content:space-between;align-items:center;">
+                      <small style="color:var(--text-faint);font-size:.85rem">{{ $show->status }}</small>
+                      <a href="{{ route('shows.show', $show) }}" class="btn">Detalles</a>
+                    </div>
+                  </div>
+                </article>
+              @endforeach
+            @else
+              <p class="about-text">No hay shows disponibles.</p>
+            @endif
+          </div>
+        </div>
+      </div>
+
+      <div style="width:min(1100px,92%);margin-inline:auto;margin-top:.6rem;display:flex;justify-content:center;">
+        <a href="{{ route('shows.index') }}" class="btn">Mostrar más shows</a>
+      </div>
+    </section>
+
   <script>
     document.addEventListener('DOMContentLoaded', function(){
       var container = document.querySelector('.posts-carousel');
@@ -159,6 +210,65 @@ en crear material propio.
     });
   </script>
   </section>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function(){
+      var container = document.querySelector('.shows-carousel');
+      var prev = document.getElementById('shows-prev');
+      var next = document.getElementById('shows-next');
+      // create next button if missing (server-side rendering compatibility)
+      if(!next){
+        next = document.createElement('button');
+        next.id = 'shows-next';
+        next.setAttribute('aria-label','Siguiente shows');
+        next.style.position = 'absolute';
+        next.style.right = '-8px';
+        next.style.top = '50%';
+        next.style.transform = 'translateY(-50%)';
+        next.style.zIndex = 3;
+        next.style.background = 'rgba(0,0,0,0.6)';
+        next.style.color = 'white';
+        next.style.border = 'none';
+        next.style.borderRadius = '999px';
+        next.style.width = '36px';
+        next.style.height = '36px';
+        next.style.display = 'flex';
+        next.style.alignItems = 'center';
+        next.style.justifyContent = 'center';
+        next.style.cursor = 'pointer';
+        next.textContent = '›';
+        var wrap = document.querySelector('.shows-carousel-wrap');
+        if(wrap) wrap.appendChild(next);
+      }
+
+      if(!container) return;
+
+      function scrollAmount(){
+        var card = container.querySelector('.post-card');
+        if(card) return card.offsetWidth + parseInt(getComputedStyle(card).marginRight || 16);
+        return Math.round(container.clientWidth * 0.8);
+      }
+
+      function updateButtons(){
+        prev.disabled = container.scrollLeft <= 0;
+        next.disabled = container.scrollLeft + container.clientWidth >= container.scrollWidth - 1;
+        prev.style.opacity = prev.disabled ? '0.4' : '1';
+        next.style.opacity = next.disabled ? '0.4' : '1';
+      }
+
+      prev.addEventListener('click', function(){
+        container.scrollBy({ left: -scrollAmount(), behavior: 'smooth' });
+        setTimeout(updateButtons, 350);
+      });
+      next.addEventListener('click', function(){
+        container.scrollBy({ left: scrollAmount(), behavior: 'smooth' });
+        setTimeout(updateButtons, 350);
+      });
+
+      container.addEventListener('scroll', updateButtons);
+      updateButtons();
+    });
+  </script>
 
 <section id="contact" class="section contact-section" aria-label="Contact Lost In The Ocean">
   <div class="section-header">

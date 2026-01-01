@@ -4,7 +4,9 @@ use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\ContactController;
 use App\Http\Controllers\Admin\PostController;
+use App\Http\Controllers\ShowController;
 use App\Models\Post;
+use App\Models\Show;
 
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Route;
@@ -12,7 +14,10 @@ use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
     $posts = Post::latest()->take(3)->get();
-    return view('home', compact('posts'));
+    // show any status on the homepage, but place future shows first, then past; limit to 3
+    $today = \Carbon\Carbon::today()->toDateString();
+    $shows = Show::orderByRaw("CASE WHEN date >= ? THEN 0 ELSE 1 END, date ASC", [$today])->take(3)->get();
+    return view('home', compact('posts', 'shows'));
 });
 
 // Public posts index (paginated)
@@ -44,6 +49,7 @@ Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () 
     // Use the top-level named route `admin.panel` for the admin landing page.
 
     Route::resource('posts', PostController::class)->except(['show']);
+    Route::resource('shows', ShowController::class);
 });
 
 Route::middleware('auth')->group(function () {
@@ -53,6 +59,18 @@ Route::middleware('auth')->group(function () {
 
 // Contact form submission
 Route::post('/contact', [ContactController::class, 'send'])->name('contact.send');
+
+// Public shows listing and detail
+Route::get('/shows', function () {
+    // Show all shows but place future dates first, then past
+    $today = \Carbon\Carbon::today()->toDateString();
+    $shows = App\Models\Show::orderByRaw("CASE WHEN date >= ? THEN 0 ELSE 1 END, date ASC", [$today])->paginate(10);
+    return view('public.shows.index', compact('shows'));
+})->name('shows.index');
+
+Route::get('/shows/{show}', function (App\Models\Show $show) {
+    return view('public.shows.show', compact('show'));
+})->name('shows.show');
 
 // Temporary DB test route (remove after debugging)
 Route::get('/db-test', function () {
@@ -82,6 +100,16 @@ Route::get('/debug-banner/{id}', function ($id) {
 // storage/app/public/banners and is intentionally narrow in scope.
 Route::get('/storage/banners/{filename}', function ($filename) {
     $path = storage_path('app/public/banners/' . $filename);
+    if (! file_exists($path)) {
+        abort(404);
+    }
+
+    return response()->file($path);
+})->where('filename', '.*');
+
+// Serve poster files similarly to banners when public/storage symlink is not present
+Route::get('/storage/posters/{filename}', function ($filename) {
+    $path = storage_path('app/public/posters/' . $filename);
     if (! file_exists($path)) {
         abort(404);
     }

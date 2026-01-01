@@ -482,12 +482,24 @@ button:focus-visible,a:focus-visible,input:focus-visible,textarea:focus-visible{
 .post-page{max-width:920px;margin:2rem auto;padding:0 1rem}
 .post-banner{border-radius:12px;overflow:hidden}
 .post-banner img{width:100%;height:420px;object-fit:cover;display:block}
+
+/* Vertical show posters: show full image without cropping on wide screens */
+.post-banner.show-banner img{
+  width:auto;
+  max-width:420px;
+  height:auto;
+  display:block;
+  margin:0 auto;
+  object-fit:contain;
+}
 .post-title{margin-top:1rem;font-size:clamp(1.6rem,3.6vw,2.6rem);font-family:var(--font-title);color:var(--text)}
 .post-meta{color:var(--text-faint);margin-bottom:1rem}
 .post-content{line-height:1.8;color:var(--text);background:transparent;padding:1rem;border-radius:8px;font-size:1.02rem}
 
 @media (max-width:640px){
   .post-banner img{height:220px}
+  /* On small screens keep poster full width but preserve aspect */
+  .post-banner.show-banner img{width:100%;height:auto;max-width:none}
   .post-content{padding:.8rem}
 }
 

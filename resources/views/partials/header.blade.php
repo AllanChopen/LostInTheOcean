@@ -10,6 +10,7 @@
       <li><a href="#hero">Home</a></li>
       <li><a href="#about">About</a></li>
       <li><a href="#posts">Blog</a></li>
+      <li><a href="#shows">Shows</a></li>
       <li><a href="#contact">Contacto</a></li>
 <li class="admin-login">
   @auth
