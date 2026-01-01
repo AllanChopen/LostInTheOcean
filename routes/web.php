@@ -5,6 +5,7 @@ use App\Http\Controllers\AdminController;
 use App\Http\Controllers\ContactController;
 use App\Http\Controllers\Admin\PostController;
 use App\Http\Controllers\ShowController;
+use App\Http\Controllers\SubscriberController;
 use App\Models\Post;
 use App\Models\Show;
 
@@ -59,6 +60,15 @@ Route::middleware('auth')->group(function () {
 
 // Contact form submission
 Route::post('/contact', [ContactController::class, 'send'])->name('contact.send');
+
+// Newsletter subscription
+Route::post('/subscribe', [SubscriberController::class, 'store'])->name('subscribe');
+
+// Unsubscribe (signed URL)
+Route::get('/unsubscribe', [SubscriberController::class, 'unsubscribe'])->name('unsubscribe');
+
+// AJAX: check subscription status for an email
+Route::get('/subscribe/check', [SubscriberController::class, 'check'])->name('subscribe.check');
 
 // Public shows listing and detail
 Route::get('/shows', function () {

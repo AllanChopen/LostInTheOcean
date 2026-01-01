@@ -315,4 +315,196 @@ en crear material propio.
   </div>
 </section>
 
+<!-- Newsletter subscribe -->
+<section id="subscribe" class="section subscribe-section" aria-label="Suscribete al canal de noticias">
+  <div class="section-header">
+    <h2 class="section-title">Canal de noticias</h2>
+    <div class="divider"></div>
+  </div>
+
+    <div style="width:min(1100px,92%);margin-inline:auto;display:flex;justify-content:center;">
+    <aside class="contact-panel" style="max-width:520px;width:100%;">
+      @if(session('success'))
+        <div style="padding:0.75rem;background: #e6ffed;border:1px solid #d1f5d8;border-radius:6px;margin-bottom:1rem;color:#084c2e">{{ session('success') }}</div>
+      @endif
+      @if(isset($errors) && $errors->has('email'))
+        <div style="padding:0.75rem;background:#fff1f0;border:1px solid #ffd6d6;border-radius:6px;margin-bottom:1rem;color:#7a0b0b">{{ $errors->first('email') }}</div>
+      @endif
+
+      <form class="contact-form" method="POST" action="{{ route('subscribe') }}">
+        @csrf
+
+        <div class="field-row">
+          <input name="email" class="field" type="email" placeholder="Tu correo" required />
+        </div>
+
+        <!-- checkbox removed: unsubscribe handled via modal -->
+
+        <div class="form-actions">
+          <div class="form-message"></div>
+          <button type="submit" class="btn">Suscribirme</button>
+        </div>
+      </form>
+
+      <p style="margin-top:.6rem;color:var(--text-faint);font-size:.9rem">Recibirás noticias, shows y lanzamientos vía email. Puedes darte de baja en cualquier momento, <a href="#" id="open-unsubscribe-modal">haz click aquí</a>.</p>
+
+      <!-- Unsubscribe modal -->
+      <div id="unsubscribe-modal" role="dialog" aria-modal="true" aria-hidden="true" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);align-items:center;justify-content:center;z-index:9999;">
+        <div style="background:var(--bg);padding:1rem 1.25rem;border-radius:8px;max-width:420px;width:92%;box-shadow:0 8px 30px rgba(0,0,0,0.25);">
+          <button id="unsubscribe-close" aria-label="Cerrar" style="float:right;background:none;border:none;font-size:1.1rem;">✕</button>
+          <h3 style="margin-top:0">Darse de baja</h3>
+          <p style="color:var(--text-faint);margin-top:.25rem">Introduce el correo que quieres desuscribir y pulsa "Darme de baja".</p>
+          <div id="unsubscribe-message" style="min-height:1.6rem;margin-top:.5rem"></div>
+          <form id="unsubscribe-form" style="margin-top:.5rem"> 
+            <input type="email" name="email" placeholder="Tu correo" required class="field" style="width:100%;margin-bottom:.5rem;" />
+            <div style="display:flex;gap:.5rem;justify-content:flex-end;align-items:center;">
+              <button type="submit" class="btn">Darme de baja</button>
+              <button type="button" id="unsubscribe-cancel" class="btn" style="background:transparent;border:1px solid rgba(0,0,0,0.06);">Cancelar</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </aside>
+  </div>
+</section>
+<script>
+document.addEventListener('DOMContentLoaded', function(){
+  var form = document.querySelector('form.contact-form[action$="/subscribe"]');
+  if (!form) return;
+  var emailInput = form.querySelector('input[name="email"]');
+  var submitBtn = form.querySelector('button[type="submit"]');
+  if (!emailInput || !submitBtn) return;
+  // Keep button always 'Suscribirme' (no dynamic toggle)
+  submitBtn.textContent = 'Suscribirme';
+  
+  // AJAX submit: subscribe/unsubscribe without full page reload
+  var messageEl = form.querySelector('.form-message');
+  form.addEventListener('submit', function(e){
+    e.preventDefault();
+    if (!submitBtn) return;
+    submitBtn.disabled = true;
+    var originalText = submitBtn.textContent;
+    submitBtn.textContent = 'Procesando...';
+
+    var csrfMeta = document.querySelector('meta[name="csrf-token"]');
+    var csrf = csrfMeta ? csrfMeta.getAttribute('content') : '';
+
+    var fd = new FormData(form);
+
+    if (messageEl) {
+      messageEl.textContent = 'Procesando...';
+      messageEl.className = 'form-message pending';
+    }
+
+    fetch(form.action, {
+      method: 'POST',
+      headers: {
+        'X-Requested-With': 'XMLHttpRequest',
+        'X-CSRF-TOKEN': csrf
+      },
+      body: fd,
+      credentials: 'same-origin'
+    }).then(function(res){
+      return res.json().then(function(json){
+        if (!res.ok) throw json;
+        return json;
+      });
+    }).then(function(json){
+      var msg = json.message || 'Operación completada';
+      if (messageEl) {
+        messageEl.textContent = msg;
+        messageEl.className = 'form-message success';
+      } else {
+        alert(msg);
+      }
+      submitBtn.textContent = originalText;
+      submitBtn.disabled = false;
+    }).catch(function(err){
+      function humanizeServerError(e){
+        if (!e) return 'Ha ocurrido un error. Intenta de nuevo.';
+        // Validation errors object from Laravel
+        if (e.errors && e.errors.email && e.errors.email.length) {
+          var raw = e.errors.email[0];
+          raw = raw.toString();
+          if (/valid email|validación|validar|must be a valid email/i.test(raw)) return 'Introduce una dirección de correo válida.';
+          if (/unique|already been taken|ya ha sido registrado|ya está en uso/i.test(raw)) return 'Este correo ya está registrado.';
+          if (/required|es requerido|is required/i.test(raw)) return 'El correo es obligatorio.';
+          return raw;
+        }
+
+        // Generic message
+        if (e.message) {
+          var m = e.message.toString();
+          if (/Too many attempts|Too many requests|rate limit/i.test(m)) return 'Has enviado demasiadas solicitudes. Intenta más tarde.';
+          return m;
+        }
+
+        return 'Ha ocurrido un error. Intenta de nuevo.';
+      }
+
+      var errMsg = humanizeServerError(err);
+
+      if (messageEl) {
+        messageEl.textContent = errMsg;
+        messageEl.className = 'form-message error';
+      } else {
+        alert(errMsg);
+      }
+
+      submitBtn.textContent = originalText;
+      submitBtn.disabled = false;
+    });
+  });
+
+  // Unsubscribe modal logic
+  var modal = document.getElementById('unsubscribe-modal');
+  var openLink = document.getElementById('open-unsubscribe-modal');
+  var closeBtn = document.getElementById('unsubscribe-close');
+  var cancelBtn = document.getElementById('unsubscribe-cancel');
+  var unsubForm = document.getElementById('unsubscribe-form');
+  var unsubMsg = document.getElementById('unsubscribe-message');
+
+  function showModal(){ if(!modal) return; modal.style.display = 'flex'; modal.setAttribute('aria-hidden','false'); }
+  function hideModal(){ if(!modal) return; modal.style.display = 'none'; modal.setAttribute('aria-hidden','true'); unsubMsg.textContent = ''; unsubForm.reset(); }
+
+  if(openLink) openLink.addEventListener('click', function(e){ e.preventDefault(); showModal(); });
+  if(closeBtn) closeBtn.addEventListener('click', function(){ hideModal(); });
+  if(cancelBtn) cancelBtn.addEventListener('click', function(){ hideModal(); });
+
+  if(unsubForm){
+    unsubForm.addEventListener('submit', function(e){
+      e.preventDefault();
+      var input = unsubForm.querySelector('input[name="email"]');
+      if(!input) return;
+      var email = input.value.trim();
+      if(!email){ unsubMsg.textContent = 'Introduce un correo válido.'; unsubMsg.style.color = 'var(--danger)'; return; }
+
+      unsubMsg.textContent = 'Procesando...'; unsubMsg.style.color = '';
+      var csrfMeta = document.querySelector('meta[name="csrf-token"]');
+      var csrf = csrfMeta ? csrfMeta.getAttribute('content') : '';
+      var fd = new FormData(); fd.append('email', email); fd.append('unsubscribe', '1');
+
+      fetch('{{ route('subscribe') }}', {
+        method: 'POST',
+        headers: { 'X-Requested-With': 'XMLHttpRequest', 'X-CSRF-TOKEN': csrf },
+        body: fd,
+        credentials: 'same-origin'
+      }).then(function(res){
+        var ct = res.headers.get('content-type') || '';
+        if (ct.indexOf('application/json') !== -1) {
+          return res.json().then(function(json){ if(!res.ok) throw json; return json; });
+        }
+        return res.text().then(function(text){ if(!res.ok) throw { message: text }; return { message: text }; });
+      })
+      .then(function(json){
+        unsubMsg.textContent = json.message || 'Te has dado de baja.';
+        unsubMsg.style.color = 'green';
+        // Do not auto-close the modal; user will close it manually
+      })
+      .catch(function(err){ var text = 'Ha ocurrido un error. Intenta de nuevo.'; if(err && err.errors && err.errors.email) text = err.errors.email[0]; if(err && err.message) text = err.message; unsubMsg.textContent = text; unsubMsg.style.color = 'var(--danger)'; });
+    });
+  }
+});
+</script>
+
 @endsection
