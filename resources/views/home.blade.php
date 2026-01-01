@@ -58,6 +58,108 @@ en crear material propio.
 
   </section>
 
+  <!-- Posts carousel -->
+  <section id="posts" class="section posts-section" aria-label="Latest posts">
+    <div class="section-header">
+      <h2 class="section-title">Blog</h2>
+      <div class="divider"></div>
+    </div>
+
+    <div style="width:min(1100px,92%);margin-inline:auto;">
+      <div class="posts-carousel-wrap" style="position:relative;">
+        <button id="posts-prev" aria-label="Anterior" style="position:absolute;left:-8px;top:50%;transform:translateY(-50%);z-index:3;background:rgba(0,0,0,0.6);color:white;border:none;border-radius:999px;width:36px;height:36px;display:flex;align-items:center;justify-content:center;cursor:pointer">‹</button>
+        <div class="posts-carousel" style="display:flex;gap:1rem;overflow:auto;padding:1rem 0;scroll-snap-type:x mandatory;scroll-behavior:smooth;">
+        @if(isset($posts) && $posts->count())
+          @foreach($posts as $post)
+            <article class="post-card" style="min-width:260px;max-width:320px;flex:0 0 auto;scroll-snap-align:start;border:1px solid rgba(0,0,0,0.06);border-radius:8px;overflow:hidden;background:var(--card-bg);display:flex;flex-direction:column;">
+              @if($post->banner_image_url)
+                <a href="{{ route('posts.show', $post) }}" style="display:block"><img src="{{ $post->banner_image_url }}" alt="{{ $post->title }}" style="width:100%;height:160px;object-fit:cover;display:block;"></a>
+              @else
+                <div style="width:100%;height:160px;background:linear-gradient(90deg,var(--muted),#eee);"></div>
+              @endif
+              <div style="padding:1rem;flex:1;display:flex;flex-direction:column;justify-content:space-between;">
+                <div>
+                  <a href="{{ route('posts.show', $post) }}" style="color:var(--text);text-decoration:none;font-weight:600;font-size:1.05rem">{{ $post->title }}</a>
+                  <p style="margin:.5rem 0 0;color:var(--text-faint);font-size:.95rem">{{ \Illuminate\Support\Str::limit(strip_tags($post->content), 140) }}</p>
+                </div>
+                <div style="margin-top:1rem;display:flex;justify-content:space-between;align-items:center;">
+                  <small style="color:var(--text-faint);font-size:.85rem">{{ optional($post->published_at ?? $post->created_at)->format('d M Y') }}</small>
+                  <a href="{{ route('posts.show', $post) }}" class="btn">Leer</a>
+                </div>
+              </div>
+            </article>
+          @endforeach
+        @else
+          <p class="about-text">No hay información disponible.</p>
+        @endif
+      </div>
+    </div>
+  </section>
+
+    <div style="width:min(1100px,92%);margin-inline:auto;margin-top:.6rem;display:flex;justify-content:center;">
+    <a href="{{ route('posts.index') }}" class="btn">Mostrar más</a>
+  </div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function(){
+      var container = document.querySelector('.posts-carousel');
+      var prev = document.getElementById('posts-prev');
+      var next = document.getElementById('posts-next');
+      // create next button if missing (server-side rendering compatibility)
+      if(!next){
+        next = document.createElement('button');
+        next.id = 'posts-next';
+        next.setAttribute('aria-label','Siguiente');
+        next.style.position = 'absolute';
+        next.style.right = '-8px';
+        next.style.top = '50%';
+        next.style.transform = 'translateY(-50%)';
+        next.style.zIndex = 3;
+        next.style.background = 'rgba(0,0,0,0.6)';
+        next.style.color = 'white';
+        next.style.border = 'none';
+        next.style.borderRadius = '999px';
+        next.style.width = '36px';
+        next.style.height = '36px';
+        next.style.display = 'flex';
+        next.style.alignItems = 'center';
+        next.style.justifyContent = 'center';
+        next.style.cursor = 'pointer';
+        next.textContent = '›';
+        var wrap = document.querySelector('.posts-carousel-wrap');
+        if(wrap) wrap.appendChild(next);
+      }
+
+      if(!container) return;
+
+      function scrollAmount(){
+        var card = container.querySelector('.post-card');
+        if(card) return card.offsetWidth + parseInt(getComputedStyle(card).marginRight || 16);
+        return Math.round(container.clientWidth * 0.8);
+      }
+
+      function updateButtons(){
+        prev.disabled = container.scrollLeft <= 0;
+        next.disabled = container.scrollLeft + container.clientWidth >= container.scrollWidth - 1;
+        prev.style.opacity = prev.disabled ? '0.4' : '1';
+        next.style.opacity = next.disabled ? '0.4' : '1';
+      }
+
+      prev.addEventListener('click', function(){
+        container.scrollBy({ left: -scrollAmount(), behavior: 'smooth' });
+        setTimeout(updateButtons, 350);
+      });
+      next.addEventListener('click', function(){
+        container.scrollBy({ left: scrollAmount(), behavior: 'smooth' });
+        setTimeout(updateButtons, 350);
+      });
+
+      container.addEventListener('scroll', updateButtons);
+      updateButtons();
+    });
+  </script>
+  </section>
+
 <section id="contact" class="section contact-section" aria-label="Contact Lost In The Ocean">
   <div class="section-header">
     <h2 class="section-title">Contacto</h2>
