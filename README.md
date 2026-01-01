@@ -125,4 +125,4 @@ Este proyecto se distribuye bajo licencia MIT.
 - Facebook: `Lost In The Ocean Band`
 - Email: `litobandaoficial@gmail.com`
 
-Si te interesa el proyecto o colaborar, ¡gracias por visitar este showcase!
+Si te interesa el proyecto o colaborar.
