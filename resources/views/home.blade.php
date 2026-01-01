@@ -58,6 +58,58 @@ en crear material propio.
 
   </section>
 
+      <!-- Shows cards (moved above posts) -->
+      <section id="shows" class="section shows-section" aria-label="Upcoming shows" style="margin-top:2rem;">
+        <div class="section-header">
+          <h2 class="section-title">Shows</h2>
+          <div class="divider"></div>
+        </div>
+
+        <div style="width:min(1100px,92%);margin-inline:auto;">
+          {{-- Grid layout removed — keeping carousel below as primary shows display. --}}
+        </div>
+
+          <div style="width:min(1100px,92%);margin-inline:auto;">
+            <div class="shows-carousel-wrap" style="position:relative;">
+              <button id="shows-prev" aria-label="Anterior shows" style="position:absolute;left:-8px;top:50%;transform:translateY(-50%);z-index:3;background:rgba(0,0,0,0.6);color:white;border:none;border-radius:999px;width:36px;height:36px;display:flex;align-items:center;justify-content:center;cursor:pointer">‹</button>
+              <button id="shows-next" aria-label="Siguiente shows" style="position:absolute;right:-8px;top:50%;transform:translateY(-50%);z-index:3;background:rgba(0,0,0,0.6);color:white;border:none;border-radius:999px;width:36px;height:36px;display:flex;align-items:center;justify-content:center;cursor:pointer">›</button>
+              <div class="shows-carousel" style="display:flex;gap:1rem;overflow:auto;padding:1rem 0;scroll-snap-type:x mandatory;scroll-behavior:smooth;">
+                @if(isset($shows) && $shows->count())
+                  @foreach($shows as $show)
+                    <article class="post-card" style="min-width:260px;max-width:320px;flex:0 0 auto;scroll-snap-align:start;border:1px solid rgba(0,0,0,0.06);border-radius:8px;overflow:hidden;background:var(--card-bg);display:flex;flex-direction:column;">
+                      @if($show->poster_image)
+                        <a href="{{ route('shows.show', $show) }}" style="display:block"><img src="{{ $show->poster_image }}" alt="{{ $show->title }}" style="width:100%;aspect-ratio:2/3;object-fit:cover;display:block;"></a>
+                      @else
+                        <div style="width:100%;aspect-ratio:2/3;background:linear-gradient(90deg,var(--muted),#eee);"></div>
+                      @endif
+                      <div style="padding:1rem;flex:1;display:flex;flex-direction:column;justify-content:space-between;">
+                        <div>
+                          <a href="{{ route('shows.show', $show) }}" style="color:var(--text);text-decoration:none;font-weight:600;font-size:1.05rem">{{ $show->title }}</a>
+                          <p style="margin:.5rem 0 0;color:var(--text-faint);font-size:.95rem;line-height:1.2">
+                            <div>{{ $show->venue }} — {{ $show->country }}, {{ $show->city }}</div>
+                            <div>{{ $show->date->locale('es')->isoFormat('D MMM YYYY') }}@if($show->start_time) - {{ optional($show->start_time)->format('H:i') }}@endif</div>
+                          </p>
+                        </div>
+                        <div style="margin-top:1rem;display:flex;justify-content:space-between;align-items:center;">
+                          <small style="color:var(--text-faint);font-size:.85rem">{{ $show->status }}</small>
+                          <a href="{{ route('shows.show', $show) }}" class="btn">Detalles</a>
+                        </div>
+                      </div>
+                    </article>
+                  @endforeach
+                @else
+                  <p class="about-text">No hay shows disponibles.</p>
+                @endif
+              </div>
+            </div>
+          </div>
+
+          <div style="width:min(1100px,92%);margin-inline:auto;margin-top:.6rem;display:flex;justify-content:center;">
+            <a href="{{ route('shows.index') }}" class="btn">Mostrar más shows</a>
+          </div>
+        </section>
+
+
   <!-- Posts carousel -->
   <section id="posts" class="section posts-section" aria-label="Latest posts">
     <div class="section-header">
@@ -96,60 +148,25 @@ en crear material propio.
     </div>
   </section>
 
+<!-- First-visit subscribe popup (non-invasive) -->
+<div id="subscribe-popup-modal" role="dialog" aria-modal="true" aria-hidden="true" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.45);align-items:center;justify-content:center;z-index:10000;padding:20px;">
+  <div style="max-width:520px;width:100%;background:linear-gradient(180deg,#0f1113,#0b0b0d);color:#e6e6e6;border-radius:10px;padding:20px;box-shadow:0 12px 40px rgba(2,6,23,0.7);border:1px solid rgba(255,255,255,0.03);">
+    <button id="subscribe-popup-close" aria-label="Cerrar" style="float:right;background:none;border:none;color:#bfb8ad;font-size:18px;">✕</button>
+    <h3 style="margin-top:0;font-family:Georgia, 'Times New Roman', serif;color:#f3efe6">Únete al canal de noticias</h3>
+    <p style="color:#cfc9c2;margin:6px 0 12px;">Recibe noticias, shows y lanzamientos exclusivos. Sin spam — puedes darte de baja en cualquier momento.</p>
+    <form id="subscribe-popup-form" style="display:flex;gap:.5rem;align-items:center;">
+      <input name="email" type="email" placeholder="Tu correo" required style="flex:1;padding:10px;border-radius:6px;border:1px solid rgba(255,255,255,0.06);background:transparent;color:inherit;" />
+      <button type="submit" class="btn" style="padding:10px 12px;">Suscribirme</button>
+    </form>
+    <div id="subscribe-popup-message" style="margin-top:10px;min-height:1.4rem;color:#bfb8ad;font-size:13px;"></div>
+  </div>
+</div>
+
     <div style="width:min(1100px,92%);margin-inline:auto;margin-top:.6rem;display:flex;justify-content:center;">
     <a href="{{ route('posts.index') }}" class="btn">Mostrar más</a>
   </div>
 
-  <!-- Shows cards -->
-  <section id="shows" class="section shows-section" aria-label="Upcoming shows" style="margin-top:2rem;">
-    <div class="section-header">
-      <h2 class="section-title">Shows</h2>
-      <div class="divider"></div>
-    </div>
-
-    <div style="width:min(1100px,92%);margin-inline:auto;">
-      {{-- Grid layout removed — keeping carousel below as primary shows display. --}}
-    </div>
-
-      <div style="width:min(1100px,92%);margin-inline:auto;">
-        <div class="shows-carousel-wrap" style="position:relative;">
-          <button id="shows-prev" aria-label="Anterior shows" style="position:absolute;left:-8px;top:50%;transform:translateY(-50%);z-index:3;background:rgba(0,0,0,0.6);color:white;border:none;border-radius:999px;width:36px;height:36px;display:flex;align-items:center;justify-content:center;cursor:pointer">‹</button>
-          <button id="shows-next" aria-label="Siguiente shows" style="position:absolute;right:-8px;top:50%;transform:translateY(-50%);z-index:3;background:rgba(0,0,0,0.6);color:white;border:none;border-radius:999px;width:36px;height:36px;display:flex;align-items:center;justify-content:center;cursor:pointer">›</button>
-          <div class="shows-carousel" style="display:flex;gap:1rem;overflow:auto;padding:1rem 0;scroll-snap-type:x mandatory;scroll-behavior:smooth;">
-            @if(isset($shows) && $shows->count())
-              @foreach($shows as $show)
-                <article class="post-card" style="min-width:260px;max-width:320px;flex:0 0 auto;scroll-snap-align:start;border:1px solid rgba(0,0,0,0.06);border-radius:8px;overflow:hidden;background:var(--card-bg);display:flex;flex-direction:column;">
-                  @if($show->poster_image)
-                    <a href="{{ route('shows.show', $show) }}" style="display:block"><img src="{{ $show->poster_image }}" alt="{{ $show->title }}" style="width:100%;aspect-ratio:2/3;object-fit:cover;display:block;"></a>
-                  @else
-                    <div style="width:100%;aspect-ratio:2/3;background:linear-gradient(90deg,var(--muted),#eee);"></div>
-                  @endif
-                  <div style="padding:1rem;flex:1;display:flex;flex-direction:column;justify-content:space-between;">
-                    <div>
-                      <a href="{{ route('shows.show', $show) }}" style="color:var(--text);text-decoration:none;font-weight:600;font-size:1.05rem">{{ $show->title }}</a>
-                      <p style="margin:.5rem 0 0;color:var(--text-faint);font-size:.95rem;line-height:1.2">
-                        <div>{{ $show->venue }} — {{ $show->country }}, {{ $show->city }}</div>
-                        <div>{{ $show->date->locale('es')->isoFormat('D MMM YYYY') }}@if($show->start_time) - {{ optional($show->start_time)->format('H:i') }}@endif</div>
-                      </p>
-                    </div>
-                    <div style="margin-top:1rem;display:flex;justify-content:space-between;align-items:center;">
-                      <small style="color:var(--text-faint);font-size:.85rem">{{ $show->status }}</small>
-                      <a href="{{ route('shows.show', $show) }}" class="btn">Detalles</a>
-                    </div>
-                  </div>
-                </article>
-              @endforeach
-            @else
-              <p class="about-text">No hay shows disponibles.</p>
-            @endif
-          </div>
-        </div>
-      </div>
-
-      <div style="width:min(1100px,92%);margin-inline:auto;margin-top:.6rem;display:flex;justify-content:center;">
-        <a href="{{ route('shows.index') }}" class="btn">Mostrar más shows</a>
-      </div>
-    </section>
+ 
 
   <script>
     document.addEventListener('DOMContentLoaded', function(){
@@ -419,6 +436,10 @@ document.addEventListener('DOMContentLoaded', function(){
       }
       submitBtn.textContent = originalText;
       submitBtn.disabled = false;
+      try {
+        localStorage.setItem('seen_subscribe_popup_v1', '1');
+        var popup = document.getElementById('subscribe-popup-modal'); if(popup) popup.style.display = 'none';
+      } catch (e) {}
     }).catch(function(err){
       function humanizeServerError(e){
         if (!e) return 'Ha ocurrido un error. Intenta de nuevo.';
@@ -504,6 +525,56 @@ document.addEventListener('DOMContentLoaded', function(){
       .catch(function(err){ var text = 'Ha ocurrido un error. Intenta de nuevo.'; if(err && err.errors && err.errors.email) text = err.errors.email[0]; if(err && err.message) text = err.message; unsubMsg.textContent = text; unsubMsg.style.color = 'var(--danger)'; });
     });
   }
+
+  // First-visit subscribe popup logic
+  (function(){
+    var key = 'seen_subscribe_popup_v1';
+    try {
+      if (localStorage.getItem(key)) return; // already seen
+    } catch (e) {}
+
+    var popup = document.getElementById('subscribe-popup-modal');
+    var close = document.getElementById('subscribe-popup-close');
+    var formPopup = document.getElementById('subscribe-popup-form');
+    var msgEl = document.getElementById('subscribe-popup-message');
+
+    function showPopup(){ if(!popup) return; popup.style.display = 'flex'; popup.setAttribute('aria-hidden','false'); }
+    function hidePopup(){ if(!popup) return; popup.style.display = 'none'; popup.setAttribute('aria-hidden','true'); }
+
+    // show after a short delay to be non-invasive
+    setTimeout(showPopup, 1400);
+
+    if (close) close.addEventListener('click', function(){ try{ localStorage.setItem(key,'1'); }catch(e){} hidePopup(); });
+
+    if (!formPopup) return;
+    formPopup.addEventListener('submit', function(e){
+      e.preventDefault();
+      var input = formPopup.querySelector('input[name="email"]');
+      if(!input) return;
+      var email = input.value.trim();
+      if(!email){ msgEl.textContent = 'Introduce un correo válido.'; msgEl.style.color = '#ffb3b3'; return; }
+
+      msgEl.textContent = 'Procesando...'; msgEl.style.color = '';
+      var csrfMeta = document.querySelector('meta[name="csrf-token"]');
+      var csrf = csrfMeta ? csrfMeta.getAttribute('content') : '';
+      var fd = new FormData(); fd.append('email', email);
+
+      fetch('{{ route('subscribe') }}', {
+        method: 'POST',
+        headers: { 'X-Requested-With': 'XMLHttpRequest', 'X-CSRF-TOKEN': csrf },
+        body: fd,
+        credentials: 'same-origin'
+      }).then(function(res){
+        return res.json().then(function(json){ if(!res.ok) throw json; return json; });
+      }).then(function(json){
+        msgEl.textContent = json.message || 'Gracias por suscribirte.'; msgEl.style.color = '#bfa46a';
+        try{ localStorage.setItem(key,'1'); }catch(e){}
+        setTimeout(hidePopup, 800);
+      }).catch(function(err){
+        var text = 'Ha ocurrido un error. Intenta de nuevo.'; if(err && err.errors && err.errors.email) text = err.errors.email[0]; if(err && err.message) text = err.message; msgEl.textContent = text; msgEl.style.color = '#ffb3b3';
+      });
+    });
+  })();
 });
 </script>
 
