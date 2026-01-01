@@ -1,221 +1,128 @@
 # Lost In The Ocean — Sitio oficial (Laravel 12)
-
-Sitio web oficial de la banda Lost In The Ocean (Ciudad de Guatemala), construido con Laravel 12. Incluye página principal con biografía y miembros, sección de contacto con formulario que envía correos, y una plantilla base con cabecera y pie de página.
-
-## Contenido
-
-- [Características](#características)
-- [Tecnologías](#tecnologías)
-- [Estructura del proyecto](#estructura-del-proyecto)
-- [Requisitos previos](#requisitos-previos)
-- [Configuración y arranque](#configuración-y-arranque)
-- [Modo desarrollo](#modo-desarrollo)
-- [Uso con Docker Compose](#uso-con-docker-compose)
-- [Rutas y endpoints](#rutas-y-endpoints)
-- [Variables de entorno de correo](#variables-de-entorno-de-correo)
-- [Personalización](#personalización)
-- [Pruebas](#pruebas)
-- [Despliegue](#despliegue)
-- [Licencia](#licencia)
+Sitio web oficial de la banda Lost In The Ocean (Ciudad de Guatemala). El proyecto está construido sobre Laravel 12 y Blade, con diseño responsivo, enfoque en accesibilidad y una experiencia ligera sin dependencias de frontend pesadas.
 
 ---
 
-## Características
+## Resumen
+- Landing page con secciones de hero, biografía y miembros.
+- Blog con listados y detalle de publicaciones.
+- Módulo de shows con carrusel en la portada y páginas públicas para listado y detalle.
+- Formulario de contacto que envía correo al inbox configurado.
+- Suscripción a canal de noticias (newsletter) con alta/baja y UX no invasiva (popup en primera visita).
+- Panel administrativo protegido para gestionar posts y shows.
+- Activos estáticos servidos desde `public/` y vistas Blade con layout invitado.
 
-- Landing page con secciones:
-  - Hero con imagen y título “Lost In The Ocean”.
-  - Biografía y lista de miembros.
-  - Contacto con formulario y datos de redes.
-- Formulario de contacto que envía un correo al inbox configurado.
-- Plantillas Blade con layout base y parciales de `header` y `footer`.
-- Assets estáticos (CSS/JS/imagenes) servidos desde `public/`.
+---
 
-## Tecnologías
-
+## Tecnologías principales
 - PHP 8.2
-- Laravel 12
-- Blade Templates
-- Vite (para assets de front-end)
-- Node/NPM (para scripts front-end)
+- Laravel 12 (MVC, Blade, Routing, Validation, Mail)
+- Blade Templates y CSS propio (cargado desde `public/styles.css`)
+- JavaScript ligero para UX (carruseles y suscripción)
+- Configuración opcional de Vite/Tailwind
 
-## Estructura del proyecto
+---
 
-- `routes/web.php`: Rutas del sitio (raíz y envío de contacto).
-- `app/Http/Controllers/ContactController.php`: Lógica para validar y enviar correo del formulario.
-- `app/Mail/ContactMail.php`: Mailable que usa la vista `emails.contact`.
-- `resources/views/layouts/app.blade.php`: Layout HTML principal.
-- `resources/views/home.blade.php`: Página principal (hero, biografía, contacto).
-- `resources/views/partials/{header,footer,contact-form}.blade.php`: Fragmentos reutilizables.
-- `resources/views/emails/contact.blade.php`: Plantilla del correo de contacto.
-- `public/`: Archivos estáticos (CSS, JS, imágenes). Ejemplos usados: `/assets/band-hero.jpg` y `/assets/icons/*.svg`.
-- `composer.json`: Dependencias y scripts de Composer (setup, dev, test).
-- `vite.config.js`: Configuración de Vite.
-- `.env.example`: Ejemplo de variables de entorno.
+## Arquitectura y estructura
 
-## Requisitos previos
+### Backend (Laravel)
+- Controladores:
+  - `App\Http\Controllers\ContactController`: valida el formulario y envía correos.
+  - `App\Http\Controllers\SubscriberController`: alta/baja y verificación de suscripciones (con endpoints para AJAX y URL firmada de baja).
+  - `App\Http\Controllers\AdminController`: acceso al panel admin (protegido).
+  - `App\Http\Controllers\Admin\PostController`: CRUD de publicaciones (admin).
+  - `App\Http\Controllers\ShowController`: gestión de shows (admin).
+- Modelos:
+  - `App\Models\Post`: publicaciones del blog. Atributos usados en vistas: `title`, `content`, `banner_image_url`, `published_at`/`created_at`.
+  - `App\Models\Show`: eventos. Atributos usados: `title`, `venue`, `country`, `city`, `date`, `start_time`, `status`, `poster_image`.
 
-- PHP 8.2+
-- Composer
-- Node.js 18+ y npm
-- Configuración SMTP válida para enviar correos (ver sección de [Variables de entorno de correo](#variables-de-entorno-de-correo))
+### Ruteo
+- Página principal:
+  - `GET /` — Muestra portada con hero, biografía, carrusel de shows (ordenando futuros primero) y carrusel de posts recientes.
+- Blog público:
+  - `GET /posts` — Listado paginado.
+  - `GET /posts/{post}` — Detalle.
+- Shows públicos:
+  - `GET /shows` — Listado paginado (futuros primero, luego pasados).
+  - `GET /shows/{show}` — Detalle.
+- Contacto:
+  - `POST /contact` — Envía correo con los datos del formulario.
+- Suscripción:
+  - `POST /subscribe` — Alta (y baja vía modal/JS, con soporte JSON).
+  - `GET /unsubscribe` — Baja mediante URL firmada.
+  - `GET /subscribe/check` — Verificación de estado (AJAX).
+- Panel admin (protegido por autenticación):
+  - `GET /admin` — Landing del panel.
+  - `admin/posts` — Recurso (excepto `show`) para posts.
+  - `admin/shows` — Recurso completo para shows.
+- Utilidades de entrega de archivos (cuando no hay symlink a `public/storage`):
+  - `GET /storage/banners/{filename}` — Sirve banners desde `storage/app/public/banners`.
+  - `GET /storage/posters/{filename}` — Sirve posters desde `storage/app/public/posters`.
 
-## Configuración y arranque
+### Vistas y layout
+- Layout invitado:
+  - `resources/views/layouts/guest.blade.php` — Estructura base, carga `public/styles.css` y `public/script.js`.
+- Parciales:
+  - `resources/views/partials/header.blade.php` — Logo, navegación, enlaces a redes y acceso al panel/admin login.
+  - `resources/views/partials/footer.blade.php` — Información de contacto y redes; año dinámico.
+- Portada:
+  - `resources/views/home.blade.php` — Secciones de hero, biografía/miembros, carrusel de shows, carrusel de posts, contacto y suscripción (incluye scripts para UX).
+- Blog:
+  - `resources/views/posts/index.blade.php` y `resources/views/posts/show.blade.php` (referenciadas por rutas).
+- Shows:
+  - `resources/views/public/shows/index.blade.php` y `resources/views/public/shows/show.blade.php` (referenciadas por rutas).
+- Correo:
+  - `resources/views/emails/contact.blade.php` — Plantilla del correo enviado desde el formulario.
 
-1. Clonar el repositorio:
-   ```bash
-   git clone https://github.com/AllanChopen/LostInTheOcean.git
-   cd LostInTheOcean
-   ```
+---
 
-2. Instalar dependencias de PHP:
-   ```bash
-   composer install
-   ```
+## Experiencia de usuario (UX)
+- Carruseles de posts y shows con botones prev/next dinámicos y scroll suave.
+- Suscripción:
+  - Popup no invasivo en primera visita, persistencia con `localStorage` para no mostrar repetidamente.
+  - Formularios con feedback inmediato (pendiente/éxito/error) y validación legible para el usuario.
+- Navegación clara en `header`, con anclas: Home, About, Blog, Shows y Contacto.
+- Footer con accesos directos a redes: Instagram, Facebook, TikTok, Email.
 
-3. Copiar archivo de entorno y generar key:
-   ```bash
-   cp .env.example .env
-   php artisan key:generate
-   ```
+---
 
-4. Configurar variables de correo en `.env` (ver más abajo).
+## Correo y suscripción
+- Formulario de contacto:
+  - Validación server-side (`name`, `email`, `phone` opcional, `message`).
+  - Envía usando `App\Mail\ContactMail` y la vista `emails.contact`.
+  - El correo actual de destino está configurado en `ContactController`.
+- Newsletter:
+  - Alta con `POST /subscribe` (soporte para JSON/AJAX).
+  - Baja mediante modal y endpoint dedicado; también existe una ruta de baja con URL firmada.
+  - Endpoint de verificación (`GET /subscribe/check`) para experiencias dinámicas.
 
-5. Instalar dependencias front-end:
-   ```bash
-   npm install
-   ```
+---
 
-6. Construir assets para producción (opcional en entornos de dev):
-   ```bash
-   npm run build
-   ```
+## Accesibilidad y rendimiento
+- Uso de roles y atributos ARIA en modales, carruseles y secciones.
+- Imágenes con `alt` y elementos semánticos para estructura.
+- Paginación en listados públicos (posts/shows) para control de carga.
+- Entrega de archivos desde rutas específicas cuando el servidor no expone `public/storage`.
 
-También puedes usar el script integrado que automatiza la mayoría de pasos:
-```bash
-composer run setup
-```
+---
 
-## Modo desarrollo
+## Activos y recursos
+- `public/assets/` contiene imágenes (logo, íconos y recursos).
+- `public/styles.css` y `public/script.js` como punto de entrada de estilos y JS.
+- Configuración opcional de Vite/Tailwind disponible (`vite.config.js`, `tailwind.config.js`) si se decide integrar un pipeline de assets.
 
-Puedes levantar el servidor y los procesos de desarrollo con Composer o manualmente:
-
-- Usando script de Composer (incluye servidor, colas, logs y Vite):
-  ```bash
-  composer run dev
-  ```
-- Manualmente:
-  ```bash
-  php artisan serve
-  npm run dev
-  ```
-
-Luego visita:
-```
-http://127.0.0.1:8000
-```
-
-## Uso con Docker Compose
-
-El proyecto incluye `compose.yaml`. Un flujo típico:
-
-```bash
-cp .env.example .env
-# Ajusta variables en .env según tus servicios (APP_URL, MAIL_*, etc.)
-docker compose up -d
-```
-
-Asegúrate de que el contenedor de la app tenga PHP 8.2 y que el servicio de correo esté correctamente configurado o accesible desde el contenedor.
-
-## Rutas y endpoints
-
-- `GET /` — Renderiza la vista `home` con las secciones del sitio.
-
-- `POST /contact` — Envía el formulario de contacto.
-  - Payload esperado:
-    ```json
-    {
-      "name": "Tu nombre",
-      "email": "tu@correo.com",
-      "phone": "Opcional",
-      "message": "Tu mensaje"
-    }
-    ```
-  - Respuestas:
-    - HTML: redirige de regreso con `session('success')`.
-    - JSON (si el request incluye `Accept: application/json`): 
-      ```json
-      { "message": "Mensaje enviado correctamente. ¡Gracias por contactarnos!" }
-      ```
-
-Ejemplo con `curl` (respuesta JSON):
-```bash
-curl -X POST http://127.0.0.1:8000/contact \
-  -H "Accept: application/json" \
-  -H "Content-Type: application/x-www-form-urlencoded" \
-  -d "name=Juan Perez&email=juan@example.com&phone=555-1234&message=Hola, me interesa la banda"
-```
-
-## Variables de entorno de correo
-
-En `.env`, ajusta estas variables para enviar emails:
-
-```env
-MAIL_MAILER=smtp
-MAIL_HOST=smtp.tu-proveedor.com
-MAIL_PORT=587
-MAIL_USERNAME=tu_usuario
-MAIL_PASSWORD=tu_password
-MAIL_ENCRYPTION=tls
-MAIL_FROM_ADDRESS=notificaciones@tudominio.com
-MAIL_FROM_NAME="Lost In The Ocean"
-```
-
-El destinatario actual del formulario está definido en:
-```
-app/Http/Controllers/ContactController.php
-```
-Línea relevante:
-```php
-Mail::to('allanchopen@gmail.com')->send(new ContactMail($data));
-```
-Cámbialo si necesitas enviar a otra dirección (por ejemplo, a un alias del management).
-
-## Personalización
-
-- Títulos, textos y biografía: edita `resources/views/home.blade.php`.
-- Miembros: lista en la sección “Miembros” dentro de la misma vista.
-- Encabezado y pie: `resources/views/partials/header.blade.php` y `resources/views/partials/footer.blade.php`.
-- Estilos y scripts: referenciados desde el layout:
-  ```blade
-  <link rel="stylesheet" href="{{ asset('styles.css') }}" />
-  <script defer src="{{ asset('script.js') }}"></script>
-  ```
-  Coloca tus archivos en `public/styles.css` y `public/script.js` o ajusta el layout para usar `@vite` si prefieres la integración estándar de Vite con Laravel.
-
-- Imágenes e íconos: coloca tus recursos en `public/assets/` y ajusta las rutas en las vistas.
-
-## Pruebas
-
-Ejecuta la suite de pruebas:
-```bash
-composer test
-```
-
-También puedes usar:
-```bash
-php artisan test
-```
-
-## Despliegue
-
-- Asegúrate de configurar correctamente `.env` en tu servidor (especialmente `APP_ENV`, `APP_KEY`, `APP_URL`, `MAIL_*`).
-- Compila assets:
-  ```bash
-  npm run build
-  ```
-- Sirve el proyecto con tu web server (Nginx/Apache) apuntando a `public/`.
-- Configura permisos de `storage/` y `bootstrap/cache`.
+---
 
 ## Licencia
+Este proyecto se distribuye bajo licencia MIT.
 
-Este proyecto se distribuye bajo licencia **MIT**.
+---
+
+## Créditos y contacto
+- Banda: Lost In The Ocean (Ciudad de Guatemala)
+- Instagram: `@LOSTINTHEOCEANBAND`
+- TikTok: `@lito.band`
+- Facebook: `Lost In The Ocean Band`
+- Email: `litobandaoficial@gmail.com`
+
+Si te interesa el proyecto o colaborar, ¡gracias por visitar este showcase!
