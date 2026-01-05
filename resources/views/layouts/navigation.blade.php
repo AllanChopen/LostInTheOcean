@@ -12,8 +12,20 @@
 
                 <!-- Navigation Links -->
                 <div class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">
-                    <x-nav-link :href="route('admin.panel')" :active="request()->routeIs('admin.*')">
-                        {{ __('Panel') }}
+                    <x-nav-link :href="url('/')" :active="request()->is('/')">
+                        Inicio
+                    </x-nav-link>
+
+                    <x-nav-link :href="route('shows.index')" :active="request()->routeIs('shows.*')">
+                        Shows
+                    </x-nav-link>
+
+                    <x-nav-link :href="route('posts.index')" :active="request()->routeIs('posts.*')">
+                        Noticias
+                    </x-nav-link>
+
+                    <x-nav-link :href="url('/#contact')">
+                        Contacto
                     </x-nav-link>
                 </div>
             </div>
@@ -68,10 +80,26 @@
     <!-- Responsive Navigation Menu -->
     <div id="responsive-menu" role="menu" :aria-hidden="!open" :class="{'block': open, 'hidden': ! open}" class="hidden sm:hidden">
         <div class="pt-2 pb-3 space-y-1">
-            <x-responsive-nav-link :href="route('admin.panel')" :active="request()->routeIs('admin.*')">
-                {{ __('Panel') }}
-            </x-responsive-nav-link>
-        </div>
+                <x-responsive-nav-link :href="route('admin.panel')" :active="request()->routeIs('admin.*')">
+                    {{ __('Panel') }}
+                </x-responsive-nav-link>
+
+                <x-responsive-nav-link :href="url('/')" :active="request()->is('/')">
+                    Inicio
+                </x-responsive-nav-link>
+
+                <x-responsive-nav-link :href="route('posts.index')" :active="request()->routeIs('posts.*')">
+                    Noticias
+                </x-responsive-nav-link>
+
+                <x-responsive-nav-link :href="route('shows.index')" :active="request()->routeIs('shows.*')">
+                    Shows
+                </x-responsive-nav-link>
+
+                <x-responsive-nav-link :href="url('/#contact')">
+                    Contacto
+                </x-responsive-nav-link>
+            </div>
 
         <!-- Responsive Settings Options -->
         <div class="pt-4 pb-1 border-t border-gray-200">

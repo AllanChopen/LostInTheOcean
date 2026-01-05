@@ -13,6 +13,8 @@
     <div class="hero-overlay-gradient" aria-hidden="true"></div>
   </section>
 
+  {{-- Merch section moved below biography --}}
+
   <!-- About -->
   <section id="about" class="section about-section" aria-label="About Lost In The Ocean">
     <div class="section-header">
@@ -56,6 +58,49 @@ en crear material propio.
         </ul>
       </div>
 
+  </section>
+
+  <!-- Products / Merch -->
+  <section id="products" class="section products-section" aria-label="Productos" style="margin-top:1.5rem;">
+    <div class="section-header">
+      <h2 class="section-title">Merch / Productos</h2>
+      <div class="divider"></div>
+    </div>
+
+    <div style="width:min(1100px,92%);margin-inline:auto;">
+      @if(isset($products) && $products->count())
+        <div class="products-carousel-wrap" style="position:relative;">
+          <button id="products-prev" aria-label="Anterior productos" style="position:absolute;left:-8px;top:50%;transform:translateY(-50%);z-index:3;background:rgba(0,0,0,0.6);color:white;border:none;border-radius:999px;width:36px;height:36px;display:flex;align-items:center;justify-content:center;cursor:pointer">‹</button>
+          <button id="products-next" aria-label="Siguiente productos" style="position:absolute;right:-8px;top:50%;transform:translateY(-50%);z-index:3;background:rgba(0,0,0,0.6);color:white;border:none;border-radius:999px;width:36px;height:36px;display:flex;align-items:center;justify-content:center;cursor:pointer">›</button>
+          <div class="products-carousel" style="display:flex;gap:1rem;overflow:auto;padding:1rem 0;scroll-snap-type:x mandatory;scroll-behavior:smooth;">
+            @foreach($products as $product)
+              <article class="product-card" style="min-width:180px;max-width:220px;flex:0 0 auto;scroll-snap-align:start;border:1px solid rgba(0,0,0,0.06);border-radius:8px;overflow:hidden;background:var(--card-bg);display:flex;flex-direction:column;padding:.6rem;">
+                @if(!empty($product->main_image_url))
+                  <div style="width:100%;aspect-ratio:1/1;overflow:hidden;border-radius:6px;margin-bottom:.5rem;background:#fff;display:flex;align-items:center;justify-content:center;">
+                    <img src="{{ asset($product->main_image_url) }}" alt="{{ $product->name }}" style="width:100%;height:100%;object-fit:cover;display:block;">
+                  </div>
+                @else
+                  <div style="width:100%;aspect-ratio:1/1;border-radius:6px;margin-bottom:.5rem;background:linear-gradient(90deg,var(--muted),#eee);"></div>
+                @endif
+                <div style="flex:1;display:flex;flex-direction:column;">
+                  <strong style="font-size:1rem">{{ $product->name }}</strong>
+                  <div style="color:var(--text-faint);font-size:.9rem;margin-top:.35rem">{{ $product->type }} &middot; {{ $product->price ? number_format($product->price,2) : '—' }}</div>
+                  <div style="margin-top:auto;display:flex;justify-content:space-between;align-items:center;margin-top:.6rem;">
+                    <a href="{{ route('store.show', $product) }}" class="btn" style="padding:.35rem .6rem">Ver</a>
+                  </div>
+                </div>
+              </article>
+            @endforeach
+          </div>
+        </div>
+      @else
+        <p style="color:var(--text-faint);">No hay productos aún.</p>
+      @endif
+
+      <div style="margin-top:1rem;display:flex;justify-content:center;">
+        <a href="{{ route('store.index') }}" class="btn">Ver tienda completa</a>
+      </div>
+    </div>
   </section>
 
       <!-- Shows cards (moved above posts) -->
@@ -142,7 +187,7 @@ en crear material propio.
             </article>
           @endforeach
         @else
-          <p class="about-text">No hay información disponible.</p>
+          <p class="about-text">No hay noticias aún.</p>
         @endif
       </div>
     </div>
@@ -228,6 +273,8 @@ en crear material propio.
   </script>
   </section>
 
+ 
+
   <script>
     document.addEventListener('DOMContentLoaded', function(){
       var container = document.querySelector('.shows-carousel');
@@ -286,6 +333,63 @@ en crear material propio.
       updateButtons();
     });
   </script>
+  <script>
+    document.addEventListener('DOMContentLoaded', function(){
+      var container = document.querySelector('.products-carousel');
+      var prev = document.getElementById('products-prev');
+      var next = document.getElementById('products-next');
+      if(!next){
+        next = document.createElement('button');
+        next.id = 'products-next';
+        next.setAttribute('aria-label','Siguiente productos');
+        next.style.position = 'absolute';
+        next.style.right = '-8px';
+        next.style.top = '50%';
+        next.style.transform = 'translateY(-50%)';
+        next.style.zIndex = 3;
+        next.style.background = 'rgba(0,0,0,0.6)';
+        next.style.color = 'white';
+        next.style.border = 'none';
+        next.style.borderRadius = '999px';
+        next.style.width = '36px';
+        next.style.height = '36px';
+        next.style.display = 'flex';
+        next.style.alignItems = 'center';
+        next.style.justifyContent = 'center';
+        next.style.cursor = 'pointer';
+        next.textContent = '›';
+        var wrap = document.querySelector('.products-carousel-wrap');
+        if(wrap) wrap.appendChild(next);
+      }
+
+      if(!container) return;
+
+      function scrollAmount(){
+        var card = container.querySelector('.product-card');
+        if(card) return card.offsetWidth + parseInt(getComputedStyle(card).marginRight || 16);
+        return Math.round(container.clientWidth * 0.8);
+      }
+
+      function updateButtons(){
+        prev.disabled = container.scrollLeft <= 0;
+        next.disabled = container.scrollLeft + container.clientWidth >= container.scrollWidth - 1;
+        prev.style.opacity = prev.disabled ? '0.4' : '1';
+        next.style.opacity = next.disabled ? '0.4' : '1';
+      }
+
+      prev.addEventListener('click', function(){
+        container.scrollBy({ left: -scrollAmount(), behavior: 'smooth' });
+        setTimeout(updateButtons, 350);
+      });
+      next.addEventListener('click', function(){
+        container.scrollBy({ left: scrollAmount(), behavior: 'smooth' });
+        setTimeout(updateButtons, 350);
+      });
+
+      container.addEventListener('scroll', updateButtons);
+      updateButtons();
+    });
+  </script>
 
 <section id="contact" class="section contact-section" aria-label="Contact Lost In The Ocean">
   <div class="section-header">
@@ -303,7 +407,7 @@ en crear material propio.
             <img src="/assets/icons/mail.svg" alt="email" style="width:18px;height:18px;opacity:.9;margin-right:6px"> litobandaoficial@gmail.com
           </li>
           <li style="display:flex;align-items:center;gap:.5rem;color:var(--text-faint);">
-            <img src="/assets/icons/instagram.svg" alt="ig" style="width:18px;height:18px;opacity:.9;margin-right:6px"> @lito.band
+            <img src="/assets/icons/instagram.svg" alt="ig" style="width:18px;height:18px;opacity:.9;margin-right:6px"> @LOSTINTHEOCEANDBAND
           </li>
         </ul>
       </div>

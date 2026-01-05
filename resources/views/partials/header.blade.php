@@ -37,8 +37,18 @@
       <a href="mailto:litobandaoficial@gmail.com" aria-label="Email" class="ico mail" title="Email">
         <img src="/assets/icons/mail.svg" alt="Email" />
       </a>
+      <!-- cart moved beside hamburger for quicker access -->
     </div>
   </nav>
+  @php
+    $__cart_items = session('cart.items', []);
+    $__cart_count = 0;
+    foreach ($__cart_items as $__ci) { $__cart_count += $__ci['qty'] ?? 0; }
+  @endphp
+  <a href="{{ route('cart.index') }}" aria-label="Carrito" class="header-cart" title="Carrito" style="margin-right:.5rem;display:inline-flex;align-items:center;gap:.4rem;">
+    <img src="/assets/icons/cart.svg" alt="Carrito" />
+    <span id="cart-count" style="background:var(--brand-accent);color:white;border-radius:999px;padding:3px 8px;font-size:.8rem;line-height:1;display:inline-block;min-width:20px;text-align:center;box-shadow:0 4px 12px rgba(0,0,0,0.08);border:1px solid rgba(0,0,0,0.04);">{{ $__cart_count }}</span>
+  </a>
   <button class="nav-toggle" aria-expanded="false" aria-label="Toggle navigation">
     <span></span>
     <span></span>

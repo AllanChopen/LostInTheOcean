@@ -4,10 +4,12 @@ use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\ContactController;
 use App\Http\Controllers\Admin\PostController;
+use App\Http\Controllers\Admin\ProductController;
 use App\Http\Controllers\ShowController;
 use App\Http\Controllers\SubscriberController;
 use App\Models\Post;
 use App\Models\Show;
+use App\Models\Product;
 
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Route;
@@ -18,8 +20,26 @@ Route::get('/', function () {
     // show any status on the homepage, but place future shows first, then past; limit to 3
     $today = \Carbon\Carbon::today()->toDateString();
     $shows = Show::orderByRaw("CASE WHEN date >= ? THEN 0 ELSE 1 END, date ASC", [$today])->take(3)->get();
-    return view('home', compact('posts', 'shows'));
+    $products = Product::where('is_active', true)->latest()->take(3)->get();
+    return view('home', compact('posts', 'shows', 'products'));
 });
+
+// Public store listing
+Route::get('/store', function () {
+    $products = Product::where('is_active', true)->latest()->paginate(12);
+    return view('public.products.index', compact('products'));
+})->name('store.index');
+
+Route::get('/store/{product}', function (App\Models\Product $product) {
+    $product->load('variants');
+    return view('public.products.show', compact('product'));
+})->name('store.show');
+
+// Cart routes (session-based)
+Route::get('/cart', [App\Http\Controllers\CartController::class, 'index'])->name('cart.index');
+Route::post('/cart/add', [App\Http\Controllers\CartController::class, 'add'])->name('cart.add');
+Route::post('/cart/update', [App\Http\Controllers\CartController::class, 'update'])->name('cart.update');
+Route::post('/cart/remove', [App\Http\Controllers\CartController::class, 'remove'])->name('cart.remove');
 
 // Public posts index (paginated)
 Route::get('/posts', function () {
@@ -50,6 +70,10 @@ Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () 
     // Use the top-level named route `admin.panel` for the admin landing page.
 
     Route::resource('posts', PostController::class)->except(['show']);
+    Route::resource('products', ProductController::class)->except(['show']);
+    // Product variants (add / remove)
+    Route::post('products/{product}/variants', [ProductController::class, 'storeVariant'])->name('products.variants.store');
+    Route::delete('products/{product}/variants/{variant}', [ProductController::class, 'destroyVariant'])->name('products.variants.destroy');
     Route::resource('shows', ShowController::class);
 });
 
