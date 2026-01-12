@@ -12,7 +12,7 @@
     <link href="https://fonts.bunny.net/css?family=figtree:400,500,600&display=swap" rel="stylesheet" />
 
     <!-- CSS puro -->
-    <link rel="stylesheet" href="{{ asset('styles.css') }}">
+    <link rel="stylesheet" href="/styles.css">
 </head>
 <body>
 
@@ -28,7 +28,7 @@
 
     @include('partials.footer')
 
-    <script src="{{ asset('script.js') }}" defer></script>
+    <script src="/script.js" defer></script>
 
 </body>
 </html>
