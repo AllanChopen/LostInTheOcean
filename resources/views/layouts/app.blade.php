@@ -10,8 +10,8 @@
   <link rel="preconnect" href="https://fonts.bunny.net">
   <link href="https://fonts.bunny.net/css?family=figtree:400,500,600&display=swap" rel="stylesheet" />
 
-  <!-- CSS puro desde public -->
-  <link rel="stylesheet" href="{{ asset('styles.css') }}">
+  <!-- CSS puro desde public (use root-relative path to avoid mixed-content) -->
+  <link rel="stylesheet" href="/styles.css">
 </head>
 <body class="site-body">
   <div class="page">
@@ -37,6 +37,6 @@
 
     </div>
 
-  <script src="{{ asset('script.js') }}" defer></script>
+  <script src="/script.js" defer></script>
 </body>
 </html>

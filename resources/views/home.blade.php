@@ -452,7 +452,7 @@ en crear material propio.
         <div style="padding:0.75rem;background:#fff1f0;border:1px solid #ffd6d6;border-radius:6px;margin-bottom:1rem;color:#7a0b0b">{{ $errors->first('email') }}</div>
       @endif
 
-      <form class="contact-form" method="POST" action="{{ route('subscribe') }}">
+      <form class="contact-form" method="POST" action="{{ route('subscribe', [], false) }}">
         @csrf
 
         <div class="field-row">
