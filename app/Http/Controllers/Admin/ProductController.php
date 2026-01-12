@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use App\Models\Product;
 use App\Models\ProductVariant;
+use Exception;
 
 class ProductController extends Controller
 {
@@ -35,8 +36,8 @@ class ProductController extends Controller
 
         $imageUrl = null;
         if ($request->hasFile('main_image')) {
-            $path = $request->file('main_image')->store('products', 'public');
-            $imageUrl = str_replace(["\r", "\n"], '', trim(Storage::url($path)));
+            $upload = cloudinary()->uploadApi()->upload($request->file('main_image')->getRealPath(), ['folder' => 'products']);
+            $imageUrl = $upload['secure_url'] ?? $upload['url'] ?? null;
         }
 
         $product = Product::create([
@@ -71,12 +72,22 @@ class ProductController extends Controller
 
         if ($request->hasFile('main_image')) {
             if (! empty($product->main_image_url)) {
-                $oldPath = ltrim(str_replace('/storage/', '', $product->main_image_url), '/');
-                Storage::disk('public')->delete($oldPath);
+                if (str_contains($product->main_image_url, '/storage/')) {
+                    $oldPath = ltrim(str_replace('/storage/', '', $product->main_image_url), '/');
+                    Storage::disk('public')->delete($oldPath);
+                } elseif (str_contains($product->main_image_url, 'cloudinary.com')) {
+                    $publicId = $this->extractPublicIdFromCloudinaryUrl($product->main_image_url);
+                    if ($publicId) {
+                        try {
+                            cloudinary()->uploadApi()->destroy($publicId);
+                        } catch (Exception $e) {
+                        }
+                    }
+                }
             }
 
-            $path = $request->file('main_image')->store('products', 'public');
-            $product->main_image_url = str_replace(["\r", "\n"], '', trim(Storage::url($path)));
+            $upload = cloudinary()->uploadApi()->upload($request->file('main_image')->getRealPath(), ['folder' => 'products']);
+            $product->main_image_url = $upload['secure_url'] ?? $upload['url'] ?? null;
         }
 
         $product->name = $data['name'];
@@ -93,8 +104,18 @@ class ProductController extends Controller
     public function destroy(Product $product)
     {
         if (! empty($product->main_image_url)) {
-            $oldPath = ltrim(str_replace('/storage/', '', $product->main_image_url), '/');
-            Storage::disk('public')->delete($oldPath);
+            if (str_contains($product->main_image_url, '/storage/')) {
+                $oldPath = ltrim(str_replace('/storage/', '', $product->main_image_url), '/');
+                Storage::disk('public')->delete($oldPath);
+            } elseif (str_contains($product->main_image_url, 'cloudinary.com')) {
+                $publicId = $this->extractPublicIdFromCloudinaryUrl($product->main_image_url);
+                if ($publicId) {
+                    try {
+                        cloudinary()->uploadApi()->destroy($publicId);
+                    } catch (Exception $e) {
+                    }
+                }
+            }
         }
 
         $product->delete();
@@ -134,3 +155,27 @@ class ProductController extends Controller
         return redirect()->route('admin.products.edit', $product)->with('success', 'Variante eliminada.');
     }
 }
+
+    /**
+     * Try to extract the Cloudinary public id from a delivered URL.
+     */
+    private function extractPublicIdFromCloudinaryUrl(string $url): ?string
+    {
+        $parts = parse_url($url);
+        if (! isset($parts['path'])) {
+            return null;
+        }
+
+        $path = $parts['path'];
+        foreach (['/image/upload/', '/video/upload/'] as $marker) {
+            $pos = strpos($path, $marker);
+            if ($pos !== false) {
+                $public = substr($path, $pos + strlen($marker));
+                $public = preg_replace('#^v[0-9]+/#', '', ltrim($public, '/'));
+                $public = preg_replace('#\.[^/.]+$#', '', $public);
+                return $public;
+            }
+        }
+
+        return null;
+    }

@@ -3,9 +3,8 @@
 /* Font face for titles */
 @font-face {
   font-family: 'Flying Hollander';
-  src: url('/fonts/FlyingHollander.woff2') format('woff2'),
-       url('/fonts/FlyingHollander.woff') format('woff'),
-       url('/fonts/FlyingHollander.ttf') format('truetype');
+  /* only ttf is present in public/fonts; avoid 404s by using the available file */
+  src: url('/fonts/FlyingHollander.ttf') format('truetype');
   font-weight: 400;
   font-style: normal;
   font-display: swap;
@@ -58,6 +57,12 @@ a:hover,a:focus{color:var(--text);}
 button{font:inherit;cursor:pointer;}
 button:focus-visible,a:focus-visible,input:focus-visible,textarea:focus-visible{outline:none;box-shadow:var(--focus);}
 .sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0;}
+
+/* Center header cart text */
+.site-header{position:relative}
+.header-cart{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);display:inline-flex;align-items:center;gap:.6rem;text-decoration:none;color:var(--text);}
+.header-cart .cart-text{font-family:var(--font-title);font-size:1rem;font-weight:400}
+.header-cart .cart-count{background:var(--brand-accent);color:white;border-radius:999px;padding:3px 8px;font-size:.8rem;line-height:1;display:inline-block;min-width:20px;text-align:center;box-shadow:0 4px 12px rgba(0,0,0,0.08);border:1px solid rgba(0,0,0,0.04);}
 
 /* Sections / Layout */
 .section{width:min(1400px,92%);margin-inline:auto;padding:clamp(3rem,6vw,6rem) 0;position:relative;}

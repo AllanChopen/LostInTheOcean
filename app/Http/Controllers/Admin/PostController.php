@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use App\Models\Post;
+use Exception;
 
 class PostController extends Controller
 {
@@ -30,9 +31,12 @@ class PostController extends Controller
 
         $bannerUrl = null;
         if ($request->hasFile('banner')) {
-            $path = $request->file('banner')->store('banners', 'public');
-            $bannerUrl = Storage::url($path);
-            $bannerUrl = str_replace(["\r", "\n"], '', trim($bannerUrl));
+            try {
+                $upload = cloudinary()->uploadApi()->upload($request->file('banner')->getRealPath(), ['folder' => 'banners']);
+                $bannerUrl = $upload['secure_url'] ?? $upload['url'] ?? null;
+            } catch (Exception $e) {
+                $bannerUrl = null;
+            }
         }
 
         Post::create([
@@ -58,14 +62,41 @@ class PostController extends Controller
         ]);
 
         if ($request->hasFile('banner')) {
-            // delete previous banner if exists
             if (! empty($post->banner_image_url)) {
-                $oldPath = ltrim(str_replace('/storage/', '', $post->banner_image_url), '/');
-                Storage::disk('public')->delete($oldPath);
+                if (str_contains($post->banner_image_url, '/storage/')) {
+                    $oldPath = ltrim(str_replace('/storage/', '', $post->banner_image_url), '/');
+                    Storage::disk('public')->delete($oldPath);
+                } elseif (str_contains($post->banner_image_url, 'cloudinary.com')) {
+                    $publicId = null;
+                    $parts = parse_url($post->banner_image_url);
+                    if (isset($parts['path'])) {
+                        $path = $parts['path'];
+                        $pos = strpos($path, '/image/upload/');
+                        if ($pos === false) {
+                            $pos = strpos($path, '/video/upload/');
+                        }
+                        if ($pos !== false) {
+                            $public = substr($path, $pos + strlen('/image/upload/'));
+                            $public = preg_replace('#^v[0-9]+/#', '', ltrim($public, '/'));
+                            $public = preg_replace('#\.[^/.]+$#', '', $public);
+                            $publicId = $public;
+                        }
+                    }
+
+                    if ($publicId) {
+                        try {
+                            cloudinary()->uploadApi()->destroy($publicId);
+                        } catch (Exception $e) {
+                        }
+                    }
+                }
             }
 
-            $path = $request->file('banner')->store('banners', 'public');
-            $post->banner_image_url = str_replace(["\r", "\n"], '', trim(Storage::url($path)));
+            try {
+                $upload = cloudinary()->uploadApi()->upload($request->file('banner')->getRealPath(), ['folder' => 'banners']);
+                $post->banner_image_url = $upload['secure_url'] ?? $upload['url'] ?? null;
+            } catch (Exception $e) {
+            }
         }
 
         $post->title = $data['title'];
@@ -78,8 +109,33 @@ class PostController extends Controller
     public function destroy(Post $post)
     {
         if (! empty($post->banner_image_url)) {
-            $oldPath = ltrim(str_replace('/storage/', '', $post->banner_image_url), '/');
-            Storage::disk('public')->delete($oldPath);
+            if (str_contains($post->banner_image_url, '/storage/')) {
+                $oldPath = ltrim(str_replace('/storage/', '', $post->banner_image_url), '/');
+                Storage::disk('public')->delete($oldPath);
+            } elseif (str_contains($post->banner_image_url, 'cloudinary.com')) {
+                $publicId = null;
+                $parts = parse_url($post->banner_image_url);
+                if (isset($parts['path'])) {
+                    $path = $parts['path'];
+                    $pos = strpos($path, '/image/upload/');
+                    if ($pos === false) {
+                        $pos = strpos($path, '/video/upload/');
+                    }
+                    if ($pos !== false) {
+                        $public = substr($path, $pos + strlen('/image/upload/'));
+                        $public = preg_replace('#^v[0-9]+/#', '', ltrim($public, '/'));
+                        $public = preg_replace('#\.[^/.]+$#', '', $public);
+                        $publicId = $public;
+                    }
+                }
+
+                if ($publicId) {
+                    try {
+                        cloudinary()->uploadApi()->destroy($publicId);
+                    } catch (Exception $e) {
+                    }
+                }
+            }
         }
 
         $post->delete();

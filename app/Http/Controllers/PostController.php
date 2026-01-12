@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Post;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
+use Exception;
 
 class PostController extends Controller
 {
@@ -21,8 +22,12 @@ class PostController extends Controller
         $bannerImageUrl = null;
 
         if ($request->hasFile('banner_image')) {
-            $path = $request->file('banner_image')->store('posts', 'public');
-            $bannerImageUrl = '/storage/' . $path;
+            try {
+                $upload = cloudinary()->uploadApi()->upload($request->file('banner_image')->getRealPath(), ['folder' => 'posts']);
+                $bannerImageUrl = $upload['secure_url'] ?? $upload['url'] ?? null;
+            } catch (Exception $e) {
+                $bannerImageUrl = null;
+            }
         }
 
         $post = Post::create([
