@@ -151,15 +151,14 @@ class ProductController extends Controller
             abort(404);
         }
 
-        $variant->delete();
-        return redirect()->route('admin.products.edit', $product)->with('success', 'Variante eliminada.');
-    }
+    $variant->delete();
+    return redirect()->route('admin.products.edit', $product)->with('success', 'Variante eliminada.');
 }
 
-    /**
-     * Try to extract the Cloudinary public id from a delivered URL.
-     */
-    private function extractPublicIdFromCloudinaryUrl(string $url): ?string
+/**
+ * Try to extract the Cloudinary public id from a delivered URL.
+ */
+private function extractPublicIdFromCloudinaryUrl(string $url): ?string
     {
         $parts = parse_url($url);
         if (! isset($parts['path'])) {
@@ -179,3 +178,4 @@ class ProductController extends Controller
 
         return null;
     }
+}
